@@ -2,6 +2,9 @@ package org.kata.theater;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.Arrays;
 import java.util.List;
 
@@ -11,17 +14,23 @@ public class TheaterService {
 // bounded contexts différents : Seat (topology, seat contains category)
 // vs Seat (reservation aka "Location", associated with a performance)
 
-    public String reservation(int reservationCount, String reservationCategory) {
+    public String reservation(int reservationCount, String reservationCategory, Performance performance) {
         StringBuilder sb = new StringBuilder();
         sb.append("<reservation>\n");
+        sb.append("\t<performance>\n");
+        sb.append("\t\t<play>").append(performance.play).append("</play>\n");
+        sb.append("\t\t<date>").append(performance.startTime.toLocalDate()).append("</date>\n");
+        sb.append("\t\t<time>").append(performance.startTime.toLocalTime()).append("</time>\n");
+        sb.append("\t</performance>\n");
 
         // get reservation id
         callDatabaseOrApi("getReservationId");
         String res_id = "123456";
         sb.append("\t<reservationId>").append(res_id).append("</reservationId>\n");
 
-        // get seats (based on avaialble, count and category)
-        callDatabaseOrApi("availablesSeats");
+        // get theater topology and all seats status ("reserved", "free") for the performance
+        callDatabaseOrApi("theaterTopology", performance);
+        TheaterRoom room = new TheaterRoom(null); // TODO
 
         // algo
         List<String> seatNames = Arrays.asList("1A", "2A", "3A", "4A");
@@ -51,11 +60,16 @@ public class TheaterService {
         return sb.toString();
     }
 
-    private Object callDatabaseOrApi(String usecase) {
+    private Object callDatabaseOrApi(String usecase, Object... parameters) {
         return null;
     }
 
     public static void main(String[] args) {
-        System.out.println(new TheaterService().reservation(4, "STANDARD"));
+        Performance performance = new Performance();
+        performance.play = "The CICD by Corneille";
+        performance.startTime = LocalDate.of(2023, Month.APRIL, 22).atTime(21, 0);
+        performance.performanceNature = "PREMIERE";
+        System.out.println(new TheaterService().reservation(4, "STANDARD",
+                performance));
     }
 }
