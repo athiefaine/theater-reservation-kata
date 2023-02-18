@@ -21,6 +21,7 @@ public class TheaterService {
      *    - adjacent seats for members of the same reservation (UL: Party)
      *    - if the Performance is PREMIERE, half the seats are set apart for VIP (and not reservable)
      *    - if the Performance is PREVIEW, 90% of the seats are set apart for VIP (and not reservable)
+     * - customer can have a subscription program allowing a 17.5% discount
      */
     public String reservation(long customerId, int reservationCount, String reservationCategory, Performance performance) {
         StringBuilder sb = new StringBuilder();
