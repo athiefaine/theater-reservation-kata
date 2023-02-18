@@ -3,13 +3,12 @@ package org.kata.theater;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class TheaterService {
+
     // pattern sandwich ?
 // agrégats : TheatreTopology, Reservation
 // bounded contexts différents : Seat (topology, seat contains category)
@@ -79,16 +78,26 @@ public class TheaterService {
         if (performance.performanceNature.equals("PREMIERE") && remainingSeats < totalSeats *0.5) {
             foundSeats = new ArrayList<>();
             System.out.println("Not enough VIP seats available for Premiere");
+        } else if (performance.performanceNature.equals("PREVIEW") && remainingSeats < totalSeats * 0.9) {
+            foundSeats = new ArrayList<>();
+            System.out.println("Not enough VIP seats available for Preview");
         }
 
-        sb.append("\t<seats>\n");
-        for (String s : foundSeats) {
-            sb.append("\t\t<seat>").append(s).append("</seat>\n");
+        if (!foundSeats.isEmpty()) {
+            sb.append("\t<reservationStatus>FULFILLED</reservationStatus>\n");
+            sb.append("\t\t<seats>\n");
+            for (String s : foundSeats) {
+                sb.append("\t\t\t<seat>").append(s).append("</seat>\n");
+            }
+            sb.append("\t\t\t</seats>\n");
+        } else {
+            sb.append("\t<reservationStatus>ABORTED</reservationStatus>\n");
         }
 
         // calculate raw price
+        BigDecimal myPrice = fetchPerformancePrice(performance.id);
 
-        BigDecimal intialprice = new BigDecimal("150.00").setScale(2, RoundingMode.DOWN);
+        BigDecimal intialprice = myPrice.multiply(BigDecimal.valueOf(reservationCount)).setScale(2, RoundingMode.DOWN);
 
         // check and apply discounts and fidelity program
         callDatabaseOrApi("checkDiscountForDate");
@@ -116,6 +125,7 @@ public class TheaterService {
         return sb.toString();
     }
 
+    // simulates a room map/topology repository
     private static TheaterRoom fetchRoomMap() {
         // ici on sent venir l'utilité forte d'un TestDataBuilder, auquel on devrait passer pour chaque zone :
         // - la liste des préfixes de noms de rangées
@@ -213,16 +223,34 @@ public class TheaterService {
                 });
     }
 
+    // simulates a performance pricing repository
+    private static BigDecimal fetchPerformancePrice(long performanceId) {
+        if (performanceId == 1L) {
+            return new BigDecimal("35.00");
+        } else {
+            return new BigDecimal("28.50");
+        }
+    }
+
     private Object callDatabaseOrApi(String usecase, Object... parameters) {
         return null;
     }
 
     public static void main(String[] args) {
         Performance performance = new Performance();
+        performance.id = 1L;
         performance.play = "The CICD by Corneille";
         performance.startTime = LocalDate.of(2023, Month.APRIL, 22).atTime(21, 0);
         performance.performanceNature = "PREMIERE";
         System.out.println(new TheaterService().reservation(4, "STANDARD",
                 performance));
+
+        Performance performance2 = new Performance();
+        performance2.id = 2L;
+        performance2.play = "Les fourberies de Scala - Molière";
+        performance2.startTime = LocalDate.of(2023, Month.MAY, 21).atTime(21, 0);
+        performance2.performanceNature = "PREVIEW";
+        System.out.println(new TheaterService().reservation(4, "STANDARD",
+                performance2));
     }
 }
