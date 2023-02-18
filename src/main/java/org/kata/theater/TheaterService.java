@@ -15,6 +15,13 @@ public class TheaterService {
 // bounded contexts différents : Seat (topology, seat contains category)
 // vs Seat (reservation aka "Location", associated with a performance)
 
+
+    /* business rules :
+     * - for finding seats
+     *    - not booked seats
+     *    - adjacent seats for members of the same reservation (UL: Party)
+     *    - if the Performance is PREMIERE, half the seats are set apart for VIP (and not reservable)
+     */
     public String reservation(int reservationCount, String reservationCategory, Performance performance) {
         StringBuilder sb = new StringBuilder();
         sb.append("<reservation>\n");
@@ -35,6 +42,8 @@ public class TheaterService {
 
         // find "reservationCount" first contiguous seats in any row
         List<String> foundSeats = new ArrayList<>();
+        int remainingSeats = 0;
+        int totalSeats = 0;
         boolean foundAllSeats = false;
         for (int i = 0; i < room.getZones().length; i++) {
             Zone zone = room.getZones()[i];
@@ -43,34 +52,37 @@ public class TheaterService {
                 List<String> seatsForRow = new ArrayList<>();
                 int streakOfNotReservedSeats = 0;
                 for (int k = 0; k < row.getSeats().length; k++) {
+                    totalSeats++;
                     Seat aSeat = row.getSeats()[k];
                     if (aSeat.getStatus().equals("FREE")) {
-                        seatsForRow.add(aSeat.getSeatId());
-                        streakOfNotReservedSeats++;
-                        if (streakOfNotReservedSeats >= reservationCount) {
-                            for (String seat : seatsForRow) {
-                                foundSeats.add(seat);
+                        remainingSeats++;
+                        if (!foundAllSeats) {
+                            seatsForRow.add(aSeat.getSeatId());
+                            streakOfNotReservedSeats++;
+                            if (streakOfNotReservedSeats >= reservationCount) {
+                                for (String seat : seatsForRow) {
+                                    foundSeats.add(seat);
+                                }
+                                foundAllSeats = true;
+                                remainingSeats -= streakOfNotReservedSeats;
                             }
-                            foundAllSeats = true;
-                            break;
                         }
                     } else {
                         seatsForRow = new ArrayList<>();
                         streakOfNotReservedSeats = 0;
                     }
                 }
-                if (foundAllSeats) {
-                    break;
-                }
             }
-            if (foundAllSeats) {
-                break;
-            }
+        }
+        System.out.println(remainingSeats);
+        System.out.println(totalSeats);
+        if (performance.performanceNature.equals("PREMIERE") && remainingSeats < totalSeats *0.5) {
+            foundSeats = new ArrayList<>();
+            System.out.println("Not enough VIP seats available for Premiere");
         }
 
         sb.append("\t<seats>\n");
-        for (
-                String s : foundSeats) {
+        for (String s : foundSeats) {
             sb.append("\t\t<seat>").append(s).append("</seat>\n");
         }
 
@@ -114,6 +126,9 @@ public class TheaterService {
         //             .withSeatCountPerRow(7, 8, 9, 9, 10, 10, 10)
         //              .withBookedSeats("A1", "A3", "A4", "B2")
         //              .build();
+
+        // remarque : nous ne sommes pas la seule appli à pouvoir booker des places ce qui expliques les trous
+        // entre des places réservées
         return new TheaterRoom(
                 new Zone[]{new Zone(new Row[]{
                         new Row(new Seat[]{
