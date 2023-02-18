@@ -20,8 +20,9 @@ public class TheaterService {
      *    - not booked seats
      *    - adjacent seats for members of the same reservation (UL: Party)
      *    - if the Performance is PREMIERE, half the seats are set apart for VIP (and not reservable)
+     *    - if the Performance is PREVIEW, 90% of the seats are set apart for VIP (and not reservable)
      */
-    public String reservation(int reservationCount, String reservationCategory, Performance performance) {
+    public String reservation(long customerId, int reservationCount, String reservationCategory, Performance performance) {
         StringBuilder sb = new StringBuilder();
         sb.append("<reservation>\n");
         sb.append("\t<performance>\n");
@@ -75,7 +76,7 @@ public class TheaterService {
         }
         System.out.println(remainingSeats);
         System.out.println(totalSeats);
-        if (performance.performanceNature.equals("PREMIERE") && remainingSeats < totalSeats *0.5) {
+        if (performance.performanceNature.equals("PREMIERE") && remainingSeats < totalSeats * 0.5) {
             foundSeats = new ArrayList<>();
             System.out.println("Not enough VIP seats available for Premiere");
         } else if (performance.performanceNature.equals("PREVIEW") && remainingSeats < totalSeats * 0.9) {
@@ -105,23 +106,29 @@ public class TheaterService {
         callDatabaseOrApi("checkCustomerFidelityProgram");
 
         // est-ce qu'il a un abonnement ou pas ?
-        BigDecimal removePercent = new BigDecimal("0.175").setScale(3, RoundingMode.DOWN);
-        BigDecimal totalBilling = BigDecimal.ONE.subtract(removePercent).multiply(intialprice);
+        boolean isSubscribed = fetchCustomerSubscription(customerId);
+
+        BigDecimal totalBilling = intialprice;
+        if (isSubscribed) {
+            BigDecimal removePercent = new BigDecimal("0.175").setScale(3, RoundingMode.DOWN);
+            totalBilling = BigDecimal.ONE.subtract(removePercent).multiply(intialprice);
+        }
         String total = totalBilling.setScale(2, RoundingMode.DOWN).toString() + "€";
 
         // emit reservation summary
-        sb.append("\t<seatCategory>").
-
-                append(reservationCategory).
-
-                append("</seatCategory>\n");
-        sb.append("\t<totalAmountDue>").
-
-                append(total).
-
-                append("</totalAmountDue>\n");
+        sb.append("\t<seatCategory>").append(reservationCategory).append("</seatCategory>\n");
+        sb.append("\t<totalAmountDue>").append(total).append("</totalAmountDue>\n");
         sb.append("</reservation>\n");
         return sb.toString();
+    }
+
+    // simulates fetching data from Customer advantages
+    private static boolean fetchCustomerSubscription(long customerId) {
+        boolean isSubscribed = false;
+        if (customerId == 1L) {
+            isSubscribed = true;
+        }
+        return isSubscribed;
     }
 
     // simulates a room map/topology repository
@@ -241,7 +248,7 @@ public class TheaterService {
         performance.play = "The CICD by Corneille";
         performance.startTime = LocalDate.of(2023, Month.APRIL, 22).atTime(21, 0);
         performance.performanceNature = "PREMIERE";
-        System.out.println(new TheaterService().reservation(4, "STANDARD",
+        System.out.println(new TheaterService().reservation(1L, 4, "STANDARD",
                 performance));
 
         Performance performance2 = new Performance();
@@ -249,7 +256,7 @@ public class TheaterService {
         performance2.play = "Les fourberies de Scala - Molière";
         performance2.startTime = LocalDate.of(2023, Month.MAY, 21).atTime(21, 0);
         performance2.performanceNature = "PREVIEW";
-        System.out.println(new TheaterService().reservation(4, "STANDARD",
+        System.out.println(new TheaterService().reservation(2L, 4, "STANDARD",
                 performance2));
     }
 }
