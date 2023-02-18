@@ -89,7 +89,7 @@ public class TheaterService {
             for (String s : foundSeats) {
                 sb.append("\t\t\t<seat>").append(s).append("</seat>\n");
             }
-            sb.append("\t\t\t</seats>\n");
+            sb.append("\t\t</seats>\n");
         } else {
             sb.append("\t<reservationStatus>ABORTED</reservationStatus>\n");
         }
@@ -115,7 +115,6 @@ public class TheaterService {
                 append(reservationCategory).
 
                 append("</seatCategory>\n");
-        sb.append("\t</seats>\n");
         sb.append("\t<totalAmountDue>").
 
                 append(total).
