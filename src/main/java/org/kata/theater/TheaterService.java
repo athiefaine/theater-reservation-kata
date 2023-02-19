@@ -72,9 +72,6 @@ public class TheaterService {
         String res_id = "123456";
         sb.append("\t<reservationId>").append(res_id).append("</reservationId>\n");
 
-        // get theater topology and all seats status ("reserved", "free") for the performance
-        callDatabaseOrApi("theaterTopology", performance);
-
         TheaterRoom room = theaterMapDao.fetchTheaterRoom(1L);
 
         // find "reservationCount" first contiguous seats in any row
@@ -172,8 +169,6 @@ public class TheaterService {
 
         // check and apply discounts and fidelity program
         callDatabaseOrApi("checkDiscountForDate");
-
-        callDatabaseOrApi("checkCustomerFidelityProgram");
 
         // est-ce qu'il a un abonnement ou pas ?
         CustomerSubscriptionDao customerSubscriptionDao = new CustomerSubscriptionDao();
