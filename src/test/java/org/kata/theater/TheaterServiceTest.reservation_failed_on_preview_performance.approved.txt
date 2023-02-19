@@ -1,0 +1,11 @@
+<reservation>
+	<performance>
+		<play>Les fourberies de Scala - Molière</play>
+		<date>2023-03-21</date>
+		<time>21:00</time>
+	</performance>
+	<reservationId>123456</reservationId>
+	<reservationStatus>ABORTED</reservationStatus>
+	<seatCategory>STANDARD</seatCategory>
+	<totalAmountDue>114.00€</totalAmountDue>
+</reservation>

@@ -1,0 +1,17 @@
+<reservation>
+	<performance>
+		<play>The CICD by Corneille</play>
+		<date>2023-04-22</date>
+		<time>21:00</time>
+	</performance>
+	<reservationId>123456</reservationId>
+	<reservationStatus>FULFILLABLE</reservationStatus>
+		<seats>
+			<seat>B3</seat>
+			<seat>B4</seat>
+			<seat>B5</seat>
+			<seat>B6</seat>
+		</seats>
+	<seatCategory>STANDARD</seatCategory>
+	<totalAmountDue>115.50€</totalAmountDue>
+</reservation>

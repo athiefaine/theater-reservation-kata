@@ -214,7 +214,7 @@ public class TheaterService {
         Performance performance2 = new Performance();
         performance2.id = 2L;
         performance2.play = "Les fourberies de Scala - Molière";
-        performance2.startTime = LocalDate.of(2023, Month.MAY, 21).atTime(21, 0);
+        performance2.startTime = LocalDate.of(2023, Month.MARCH, 21).atTime(21, 0);
         performance2.performanceNature = "PREVIEW";
         System.out.println(theaterService.reservation(2L, 4, "STANDARD",
                 performance2));
