@@ -1,4 +1,4 @@
-package org.kata.theater;
+package org.kata.theater.data;
 
 public class Row {
 

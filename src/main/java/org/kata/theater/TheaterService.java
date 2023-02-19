@@ -1,6 +1,9 @@
 package org.kata.theater;
 
+import org.kata.theater.dao.CustomerSubscriptionDao;
+import org.kata.theater.dao.PerformancePriceDao;
 import org.kata.theater.dao.TheaterMapDao;
+import org.kata.theater.data.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -12,7 +15,8 @@ import java.util.List;
 import java.util.Map;
 
 public class TheaterService {
-    private TheaterMapDao theaterMapDao = new TheaterMapDao();
+    private final TheaterMapDao theaterMapDao = new TheaterMapDao();
+    private final PerformancePriceDao performancePriceDao = new PerformancePriceDao();
 
     // pattern sandwich ?
 // agrégats : TheatreTopology, Reservation
@@ -158,7 +162,7 @@ public class TheaterService {
         }
 
         // calculate raw price
-        BigDecimal myPrice = fetchPerformancePrice(performance.id);
+        BigDecimal myPrice = performancePriceDao.fetchPerformancePrice(performance.id);
 
         BigDecimal intialprice = BigDecimal.ZERO.setScale(2, RoundingMode.DOWN);
         for (String foundSeat : foundSeats) {
@@ -172,7 +176,8 @@ public class TheaterService {
         callDatabaseOrApi("checkCustomerFidelityProgram");
 
         // est-ce qu'il a un abonnement ou pas ?
-        boolean isSubscribed = fetchCustomerSubscription(customerId);
+        CustomerSubscriptionDao customerSubscriptionDao = new CustomerSubscriptionDao();
+        boolean isSubscribed = customerSubscriptionDao.fetchCustomerSubscription(customerId);
 
         BigDecimal totalBilling = intialprice;
         if (isSubscribed) {
@@ -191,24 +196,6 @@ public class TheaterService {
     }
 
     // TODO : service d'annulation ?
-
-    // simulates fetching data from Customer advantages
-    private static boolean fetchCustomerSubscription(long customerId) {
-        boolean isSubscribed = false;
-        if (customerId == 1L) {
-            isSubscribed = true;
-        }
-        return isSubscribed;
-    }
-
-    // simulates a performance pricing repository
-    private static BigDecimal fetchPerformancePrice(long performanceId) {
-        if (performanceId == 1L) {
-            return new BigDecimal("35.00");
-        } else {
-            return new BigDecimal("28.50");
-        }
-    }
 
     private Object callDatabaseOrApi(String usecase, Object... parameters) {
         return null;

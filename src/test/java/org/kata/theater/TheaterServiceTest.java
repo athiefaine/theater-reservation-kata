@@ -3,6 +3,7 @@ package org.kata.theater;
 import org.approvaltests.Approvals;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.kata.theater.data.Performance;
 
 import java.time.LocalDate;
 import java.time.Month;

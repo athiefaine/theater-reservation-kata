@@ -1,9 +1,9 @@
 package org.kata.theater.dao;
 
-import org.kata.theater.Row;
-import org.kata.theater.Seat;
-import org.kata.theater.TheaterRoom;
-import org.kata.theater.Zone;
+import org.kata.theater.data.Row;
+import org.kata.theater.data.Seat;
+import org.kata.theater.data.TheaterRoom;
+import org.kata.theater.data.Zone;
 
 import java.util.HashMap;
 import java.util.Map;
