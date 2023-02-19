@@ -7,10 +7,22 @@
 	<reservationId>123456</reservationId>
 	<reservationStatus>FULFILLABLE</reservationStatus>
 		<seats>
-			<seat>I3</seat>
-			<seat>I4</seat>
-			<seat>I5</seat>
-			<seat>I6</seat>
+			<seat>
+				<id>I3</id>
+				<category>PREMIUM</category>
+			</seat>
+			<seat>
+				<id>I4</id>
+				<category>PREMIUM</category>
+			</seat>
+			<seat>
+				<id>I5</id>
+				<category>PREMIUM</category>
+			</seat>
+			<seat>
+				<id>I6</id>
+				<category>PREMIUM</category>
+			</seat>
 		</seats>
 	<seatCategory>PREMIUM</seatCategory>
 	<totalAmountDue>173.25€</totalAmountDue>

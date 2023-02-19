@@ -147,7 +147,10 @@ public class TheaterService {
             sb.append("\t<reservationStatus>FULFILLABLE</reservationStatus>\n");
             sb.append("\t\t<seats>\n");
             for (String s : foundSeats) {
-                sb.append("\t\t\t<seat>").append(s).append("</seat>\n");
+                sb.append("\t\t\t<seat>\n");
+                sb.append("\t\t\t\t<id>").append(s).append("</id>\n");
+                sb.append("\t\t\t\t<category>").append(seatsCategory.get(s)).append("</category>\n");
+                sb.append("\t\t\t</seat>\n");
             }
             sb.append("\t\t</seats>\n");
         } else {

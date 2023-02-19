@@ -7,11 +7,26 @@
 	<reservationId>123456</reservationId>
 	<reservationStatus>FULFILLABLE</reservationStatus>
 		<seats>
-			<seat>C1</seat>
-			<seat>C2</seat>
-			<seat>C3</seat>
-			<seat>C4</seat>
-			<seat>C5</seat>
+			<seat>
+				<id>C1</id>
+				<category>STANDARD</category>
+			</seat>
+			<seat>
+				<id>C2</id>
+				<category>STANDARD</category>
+			</seat>
+			<seat>
+				<id>C3</id>
+				<category>STANDARD</category>
+			</seat>
+			<seat>
+				<id>C4</id>
+				<category>STANDARD</category>
+			</seat>
+			<seat>
+				<id>C5</id>
+				<category>STANDARD</category>
+			</seat>
 		</seats>
 	<seatCategory>STANDARD</seatCategory>
 	<totalAmountDue>144.37€</totalAmountDue>
