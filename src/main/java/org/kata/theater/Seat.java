@@ -25,4 +25,12 @@ public class Seat {
     public void setStatus(String status) {
         this.status = status;
     }
+
+    @Override
+    public String toString() {
+        return "Seat{" +
+                "seatId='" + seatId + '\'' +
+                ", status='" + status + '\'' +
+                '}';
+    }
 }

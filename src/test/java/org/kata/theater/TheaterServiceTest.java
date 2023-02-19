@@ -29,6 +29,18 @@ class TheaterServiceTest {
     }
 
     @Test
+    void reserve_once_on_premiere_performance_with_premium_category() {
+        Performance performance = new Performance();
+        performance.id = 1L;
+        performance.play = "The CICD by Corneille";
+        performance.startTime = LocalDate.of(2023, Month.APRIL, 22).atTime(21, 0);
+        performance.performanceNature = "PREMIERE";
+        String reservation = theaterService.reservation(1L, 4, "PREMIUM",
+                performance);
+        Approvals.verify(reservation);
+    }
+
+    @Test
     void reserve_twice_on_premiere_performance() {
         Performance performance = new Performance();
         performance.id = 1L;

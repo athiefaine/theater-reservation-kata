@@ -119,7 +119,28 @@ public class TheaterMapDao {
                                 new Seat("G10", "FREE")
                         }
                         )
-                })
+                }, "STANDARD"),
+                        new Zone(new Row[]{
+                                new Row(new Seat[]{
+                                        new Seat("H1", "BOOKED"), // smell : le statut est mélé à la topologie
+                                        new Seat("H2", "FREE"),
+                                        new Seat("H3", "BOOKED"),
+                                        new Seat("H4", "BOOKED"),
+                                        new Seat("H5", "FREE"),
+                                        new Seat("H6", "FREE"),
+                                        new Seat("H7", "FREE")
+                                }),
+                                new Row(new Seat[]{
+                                        new Seat("I1", "FREE"),
+                                        new Seat("I2", "BOOKED"),
+                                        new Seat("I3", "FREE"),
+                                        new Seat("I4", "FREE"),
+                                        new Seat("I5", "FREE"),
+                                        new Seat("I6", "FREE"),
+                                        new Seat("I7", "FREE"),
+                                        new Seat("I8", "FREE")
+                                })
+                        }, "PREMIUM")
                 });
     }
 }

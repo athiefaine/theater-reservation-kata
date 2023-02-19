@@ -7,7 +7,9 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TheaterService {
     private TheaterMapDao theaterMapDao = new TheaterMapDao();
@@ -73,11 +75,14 @@ public class TheaterService {
 
         // find "reservationCount" first contiguous seats in any row
         List<String> foundSeats = new ArrayList<>();
+        Map<String, String> seatsCategory = new HashMap<>();
+        String zoneCategory;
         int remainingSeats = 0;
         int totalSeats = 0; // devrait être porté par l'agrégat TheaterRoom, pour illustrer le Tell/Don't Ask
         boolean foundAllSeats = false;
         for (int i = 0; i < room.getZones().length; i++) {
             Zone zone = room.getZones()[i];
+            zoneCategory = zone.getCategory();
             for (int j = 0; j < zone.getRows().length; j++) {
                 Row row = zone.getRows()[j];
                 List<String> seatsForRow = new ArrayList<>();
@@ -87,18 +92,22 @@ public class TheaterService {
                     Seat aSeat = row.getSeats()[k];
                     if (!aSeat.getStatus().equals("BOOKED") && !aSeat.getStatus().equals("BOOKING_PENDING")) {
                         remainingSeats++;
+                        if (!reservationCategory.equals(zoneCategory)) {
+                            continue;
+                        }
                         if (!foundAllSeats) {
                             seatsForRow.add(aSeat.getSeatId());
                             // TODO : changer l'état du seat à "BOOKED"
                             // boite de pandore agrégat/entity/value object
                             // au global, notion de ReservationRequest/ReservationAttempt
-                            // état FREE ou BOOKED devrait être dérivé à partir d'un bookingRef porté par le l'entity Seat
+                            // état FREE ou BOOKING_PENDING/BOOKED devrait être dérivé à partir d'un bookingRef porté par le l'entity Seat
                             // BC Topology : Seat = ValueObject
                             // BC Booking/Reservation : Seat = Entity, la partie mouvante c'est la bookingRef
                             streakOfNotReservedSeats++;
                             if (streakOfNotReservedSeats >= reservationCount) {
                                 for (String seat : seatsForRow) {
                                     foundSeats.add(seat);
+                                    seatsCategory.put(seat, zoneCategory);
                                 }
                                 foundAllSeats = true;
                                 remainingSeats -= streakOfNotReservedSeats;
@@ -148,7 +157,11 @@ public class TheaterService {
         // calculate raw price
         BigDecimal myPrice = fetchPerformancePrice(performance.id);
 
-        BigDecimal intialprice = myPrice.multiply(BigDecimal.valueOf(reservationCount)).setScale(2, RoundingMode.DOWN);
+        BigDecimal intialprice = BigDecimal.ZERO.setScale(2, RoundingMode.DOWN);
+        for (String foundSeat : foundSeats) {
+            BigDecimal categoryRatio = seatsCategory.get(foundSeat).equals("STANDARD") ? BigDecimal.ONE : new BigDecimal("1.5");
+            intialprice = intialprice.add(myPrice.multiply(categoryRatio));
+        }
 
         // check and apply discounts and fidelity program
         callDatabaseOrApi("checkDiscountForDate");

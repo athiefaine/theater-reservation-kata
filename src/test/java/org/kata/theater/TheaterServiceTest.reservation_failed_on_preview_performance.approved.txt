@@ -7,5 +7,5 @@
 	<reservationId>123456</reservationId>
 	<reservationStatus>ABORTED</reservationStatus>
 	<seatCategory>STANDARD</seatCategory>
-	<totalAmountDue>114.00€</totalAmountDue>
+	<totalAmountDue>0.00€</totalAmountDue>
 </reservation>
