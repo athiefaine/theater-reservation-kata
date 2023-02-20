@@ -68,4 +68,17 @@ class TheaterServiceTest {
         Approvals.verify(reservation);
     }
 
+    @Test
+    void reservation_failed_on_premiere_performance() {
+        Performance performance = new Performance();
+        performance.id = 3L;
+        performance.play = "DOM JSON - Molière";
+        performance.startTime = LocalDate.of(2023, Month.MARCH, 21).atTime(21, 0);
+        performance.performanceNature = "PREMIERE";
+
+        String reservation = theaterService.reservation(2L, 4, "STANDARD",
+                performance);
+        Approvals.verify(reservation);
+    }
+
 }

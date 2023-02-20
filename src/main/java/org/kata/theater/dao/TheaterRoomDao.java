@@ -8,14 +8,15 @@ import org.kata.theater.data.Zone;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TheaterMapDao {
+public class TheaterRoomDao {
     // simulates a room map/topology repository
-    // move to TheaterRoomDao (mais sans interface et en instanciation directe) ?
 
     private Map<Long, TheaterRoom> theaterRoomMaps = new HashMap<>();
 
-    public TheaterMapDao() {
+    public TheaterRoomDao() {
         theaterRoomMaps.put(1L, fetchRoomForPerformance1());
+        theaterRoomMaps.put(2L, fetchRoomForPerformance1());
+        theaterRoomMaps.put(3L, fetchRoomForPerformance2());
     }
 
     public TheaterRoom fetchTheaterRoom(long performanceId) {
@@ -141,6 +142,34 @@ public class TheaterMapDao {
                                         new Seat("I8", "FREE")
                                 })
                         }, "PREMIUM")
+                });
+    }
+
+    private static TheaterRoom fetchRoomForPerformance2() {
+
+        return new TheaterRoom( // pourrait être un Agregate
+                new Zone[]{new Zone(new Row[]{
+                        new Row(new Seat[]{
+                                new Seat("R1-1", "BOOKED"), // smell : le statut est mélé à la topologie
+                                new Seat("R1-2", "FREE"),
+                                new Seat("R1-3", "BOOKED"),
+                                new Seat("R1-4", "BOOKED"),
+                                new Seat("R1-5", "FREE"),
+                                new Seat("R1-6", "FREE"),
+                                new Seat("R1-7", "FREE")
+                        }),
+                        new Row(new Seat[]{
+                                new Seat("R2-1", "FREE"),
+                                new Seat("R2-2", "BOOKED"),
+                                new Seat("R2-3", "FREE"),
+                                new Seat("R2-4", "FREE"),
+                                new Seat("R2-5", "FREE"),
+                                new Seat("R2-6", "FREE"),
+                                new Seat("R2-7", "FREE"),
+                                new Seat("R2-8", "FREE")
+                        }
+                        )
+                }, "STANDARD")
                 });
     }
 }

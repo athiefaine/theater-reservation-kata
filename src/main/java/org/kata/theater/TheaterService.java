@@ -2,7 +2,7 @@ package org.kata.theater;
 
 import org.kata.theater.dao.CustomerSubscriptionDao;
 import org.kata.theater.dao.PerformancePriceDao;
-import org.kata.theater.dao.TheaterMapDao;
+import org.kata.theater.dao.TheaterRoomDao;
 import org.kata.theater.dao.VoucherProgramDao;
 import org.kata.theater.data.*;
 
@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 public class TheaterService {
-    private final TheaterMapDao theaterMapDao = new TheaterMapDao();
+    private final TheaterRoomDao theaterRoomDao = new TheaterRoomDao();
     private final PerformancePriceDao performancePriceDao = new PerformancePriceDao();
 
     // pattern sandwich ?
@@ -72,7 +72,7 @@ public class TheaterService {
         String res_id = ReservationIdService.initNewReservation();
         sb.append("\t<reservationId>").append(res_id).append("</reservationId>\n");
 
-        TheaterRoom room = theaterMapDao.fetchTheaterRoom(1L);
+        TheaterRoom room = theaterRoomDao.fetchTheaterRoom(performance.id);
 
         // find "reservationCount" first contiguous seats in any row
         List<String> foundSeats = new ArrayList<>();
@@ -126,7 +126,7 @@ public class TheaterService {
                             seat.setStatus("BOOKING_PENDING");
                         }
                     }
-                    theaterMapDao.save(performance.id, room);
+                    theaterRoomDao.save(performance.id, room);
                 }
             }
         }
