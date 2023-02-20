@@ -4,7 +4,7 @@
 		<date>2023-04-22</date>
 		<time>21:00</time>
 	</performance>
-	<reservationId>123456</reservationId>
+	<reservationId>123458</reservationId>
 	<reservationStatus>FULFILLABLE</reservationStatus>
 		<seats>
 			<seat>
@@ -25,5 +25,5 @@
 			</seat>
 		</seats>
 	<seatCategory>STANDARD</seatCategory>
-	<totalAmountDue>115.50€</totalAmountDue>
+	<totalAmountDue>92.40€</totalAmountDue>
 </reservation>

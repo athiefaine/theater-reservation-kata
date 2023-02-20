@@ -3,6 +3,7 @@ package org.kata.theater;
 import org.kata.theater.dao.CustomerSubscriptionDao;
 import org.kata.theater.dao.PerformancePriceDao;
 import org.kata.theater.dao.TheaterMapDao;
+import org.kata.theater.dao.VoucherProgramDao;
 import org.kata.theater.data.*;
 
 import java.math.BigDecimal;
@@ -67,9 +68,8 @@ public class TheaterService {
         sb.append("\t\t<time>").append(performance.startTime.toLocalTime()).append("</time>\n");
         sb.append("\t</performance>\n");
 
-        // get reservation id, notion entité/agrégat
-        callDatabaseOrApi("getReservationId");
-        String res_id = "123456";
+        // get reservation id, notion entité/agrégat ? (faire un objet plus complexe ?)
+        String res_id = ReservationIdService.initNewReservation();
         sb.append("\t<reservationId>").append(res_id).append("</reservationId>\n");
 
         TheaterRoom room = theaterMapDao.fetchTheaterRoom(1L);
@@ -135,6 +135,7 @@ public class TheaterService {
         // en vrai ce qui suit : BC Marketing
         // il le renvoie dans une Map<PerformanceCategory, VIPRate>
         if (performance.performanceNature.equals("PREMIERE") && remainingSeats < totalSeats * 0.5) {
+            // TODO : branche pas couverte
             foundSeats = new ArrayList<>();
             System.out.println("Not enough VIP seats available for Premiere");
         } else if (performance.performanceNature.equals("PREVIEW") && remainingSeats < totalSeats * 0.9) {
@@ -168,7 +169,7 @@ public class TheaterService {
         }
 
         // check and apply discounts and fidelity program
-        callDatabaseOrApi("checkDiscountForDate");
+        BigDecimal discountTime = VoucherProgramDao.fetchVoucherProgram(LocalDate.now()); // nasty dependency of course
 
         // est-ce qu'il a un abonnement ou pas ?
         CustomerSubscriptionDao customerSubscriptionDao = new CustomerSubscriptionDao();
@@ -179,7 +180,8 @@ public class TheaterService {
             BigDecimal removePercent = new BigDecimal("0.175").setScale(3, RoundingMode.DOWN);
             totalBilling = BigDecimal.ONE.subtract(removePercent).multiply(intialprice);
         }
-        String total = totalBilling.setScale(2, RoundingMode.DOWN).toString() + "€";
+        BigDecimal discountRatio = BigDecimal.ONE.subtract(discountTime);
+        String total = totalBilling.multiply(discountRatio).setScale(2, RoundingMode.DOWN).toString() + "€";
         // € ou $ => BC Billing, en dehors c'est la banque qui fait la conversion
 
         // emit reservation summary
@@ -191,10 +193,6 @@ public class TheaterService {
     }
 
     // TODO : service d'annulation ?
-
-    private Object callDatabaseOrApi(String usecase, Object... parameters) {
-        return null;
-    }
 
     public static void main(String[] args) {
         Performance performance = new Performance();
