@@ -7,6 +7,7 @@ import org.kata.theater.data.Performance;
 
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.List;
 
 class TheaterServiceTest {
 
@@ -37,6 +38,19 @@ class TheaterServiceTest {
         performance.startTime = LocalDate.of(2023, Month.APRIL, 22).atTime(21, 0);
         performance.performanceNature = "PREMIERE";
         String reservation = theaterService.reservation(1L, 4, "PREMIUM",
+                performance);
+        Approvals.verify(reservation);
+    }
+
+    @Test
+    void cancel_then_reserve_on_premiere_performance_with_standard_category() {
+        theaterService.cancelReservation("45", 1L, List.of("B2"));
+        Performance performance = new Performance();
+        performance.id = 1L;
+        performance.play = "The CICD by Corneille";
+        performance.startTime = LocalDate.of(2023, Month.APRIL, 22).atTime(21, 0);
+        performance.performanceNature = "PREMIERE";
+        String reservation = theaterService.reservation(1L, 4, "STANDARD",
                 performance);
         Approvals.verify(reservation);
     }

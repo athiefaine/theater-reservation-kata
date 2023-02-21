@@ -45,18 +45,18 @@ public class TheaterService {
      *    l'instant le dérive depuis la zone et après coup le prendra directement du Seat
      */
 
-     /*
-      * pour le pricing pur :
-      * - BC Catalogue : performances avec date, pièce, categoryRepresentation (BC Marketing plutôt ?) et salle
-      * - BC Topology : catégorie de Seat
-      * - BC Reservation : attribution des Seats, et l'état actuel de réservation de chaque Seat
-      * - BC Pricing : prix de base pour la Performance (soit prix de base  + ratio ou somme forfaitaire par catégorie de Seat)
-      * - BC Marketing : applique discount (ratio et/ou réduction forfaitaire)
-      *       - paying subscription (17.5% de discount)
-      *       - campagne temporaire offrant 20% à partir de 4 personnes
-      *    - design cible : on envoie le pricing brut au BC Marketing qui nous renvoie un pricing ajusté
-      *    - design cracra de départ : tout est au même endroit
-      */
+    /*
+     * pour le pricing pur :
+     * - BC Catalogue : performances avec date, pièce, categoryRepresentation (BC Marketing plutôt ?) et salle
+     * - BC Topology : catégorie de Seat
+     * - BC Reservation : attribution des Seats, et l'état actuel de réservation de chaque Seat
+     * - BC Pricing : prix de base pour la Performance (soit prix de base  + ratio ou somme forfaitaire par catégorie de Seat)
+     * - BC Marketing : applique discount (ratio et/ou réduction forfaitaire)
+     *       - paying subscription (17.5% de discount)
+     *       - campagne temporaire offrant 20% à partir de 4 personnes
+     *    - design cible : on envoie le pricing brut au BC Marketing qui nous renvoie un pricing ajusté
+     *    - design cracra de départ : tout est au même endroit
+     */
 
 
     public String reservation(long customerId, int reservationCount, String reservationCategory, Performance performance) {
@@ -192,7 +192,24 @@ public class TheaterService {
         return sb.toString();
     }
 
-    // TODO : service d'annulation ?
+    // TODO : implement Reservation + ReservationDAO
+    public void cancelReservation(String reservationId, Long performanceId, List<String> seats) {
+        TheaterRoom theaterRoom = theaterRoomDao.fetchTheaterRoom(performanceId);
+        for (int i = 0; i < theaterRoom.getZones().length; i++) {
+            Zone zone = theaterRoom.getZones()[i];
+            for (int j = 0; j < zone.getRows().length; j++) {
+                Row row = zone.getRows()[j];
+                for (int k = 0; k < row.getSeats().length; k++) {
+                    Seat seat = row.getSeats()[k];
+                    if (seats.contains(seat.getSeatId())) {
+                        seat.setStatus("FREE");
+                    }
+                }
+            }
+        }
+        theaterRoomDao.save(performanceId, theaterRoom);
+    }
+
 
     public static void main(String[] args) {
         Performance performance = new Performance();

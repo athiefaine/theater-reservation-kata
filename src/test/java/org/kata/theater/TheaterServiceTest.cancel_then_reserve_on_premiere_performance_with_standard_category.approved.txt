@@ -4,30 +4,26 @@
 		<date>2023-04-22</date>
 		<time>21:00</time>
 	</performance>
-	<reservationId>123462</reservationId>
+	<reservationId>123457</reservationId>
 	<reservationStatus>FULFILLABLE</reservationStatus>
 		<seats>
 			<seat>
-				<id>C1</id>
+				<id>B1</id>
 				<category>STANDARD</category>
 			</seat>
 			<seat>
-				<id>C2</id>
+				<id>B2</id>
 				<category>STANDARD</category>
 			</seat>
 			<seat>
-				<id>C3</id>
+				<id>B3</id>
 				<category>STANDARD</category>
 			</seat>
 			<seat>
-				<id>C4</id>
-				<category>STANDARD</category>
-			</seat>
-			<seat>
-				<id>C5</id>
+				<id>B4</id>
 				<category>STANDARD</category>
 			</seat>
 		</seats>
 	<seatCategory>STANDARD</seatCategory>
-	<totalAmountDue>115.50€</totalAmountDue>
+	<totalAmountDue>92.40€</totalAmountDue>
 </reservation>
