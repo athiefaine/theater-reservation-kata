@@ -60,6 +60,7 @@ public class TheaterService {
 
 
     public String reservation(long customerId, int reservationCount, String reservationCategory, Performance performance) {
+        Reservation reservation = new Reservation();
         StringBuilder sb = new StringBuilder();
         sb.append("<reservation>\n"); // should be named ReservationRequest
         sb.append("\t<performance>\n");
@@ -69,7 +70,9 @@ public class TheaterService {
         sb.append("\t</performance>\n");
 
         // get reservation id, notion entité/agrégat ? (faire un objet plus complexe ?)
-        String res_id = ReservationIdService.initNewReservation();
+        String res_id = ReservationService.initNewReservation();
+        reservation.setReservationId(Long.parseLong(res_id));
+        reservation.setPerformanceId(performance.id);
         sb.append("\t<reservationId>").append(res_id).append("</reservationId>\n");
 
         TheaterRoom room = theaterRoomDao.fetchTheaterRoom(performance.id);
@@ -130,8 +133,15 @@ public class TheaterService {
                 }
             }
         }
+        reservation.setSeats(foundSeats.toArray(new String[0]));
         System.out.println(remainingSeats);
         System.out.println(totalSeats);
+        if (foundAllSeats) {
+            reservation.setStatus("PENDING");
+        } else {
+            reservation.setStatus("ABORTED");
+        }
+        ReservationService.updateReservation(reservation);
         // en vrai ce qui suit : BC Marketing
         // il le renvoie dans une Map<PerformanceCategory, VIPRate>
         if (performance.performanceNature.equals("PREMIERE") && remainingSeats < totalSeats * 0.5) {
@@ -208,6 +218,7 @@ public class TheaterService {
             }
         }
         theaterRoomDao.save(performanceId, theaterRoom);
+        ReservationService.cancelReservation(Long.parseLong(reservationId));
     }
 
 

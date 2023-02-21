@@ -44,7 +44,7 @@ class TheaterServiceTest {
 
     @Test
     void cancel_then_reserve_on_premiere_performance_with_standard_category() {
-        theaterService.cancelReservation("45", 1L, List.of("B2"));
+        theaterService.cancelReservation("123456", 1L, List.of("B2"));
         Performance performance = new Performance();
         performance.id = 1L;
         performance.play = "The CICD by Corneille";
