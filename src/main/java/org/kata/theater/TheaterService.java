@@ -139,13 +139,13 @@ public class TheaterService {
         if (foundAllSeats) {
             reservation.setStatus("PENDING");
         } else {
+            // TODO : branche pas couverte
             reservation.setStatus("ABORTED");
         }
         ReservationService.updateReservation(reservation);
         // en vrai ce qui suit : BC Marketing
         // il le renvoie dans une Map<PerformanceCategory, VIPRate>
         if (performance.performanceNature.equals("PREMIERE") && remainingSeats < totalSeats * 0.5) {
-            // TODO : branche pas couverte
             foundSeats = new ArrayList<>();
             System.out.println("Not enough VIP seats available for Premiere");
         } else if (performance.performanceNature.equals("PREVIEW") && remainingSeats < totalSeats * 0.9) {
