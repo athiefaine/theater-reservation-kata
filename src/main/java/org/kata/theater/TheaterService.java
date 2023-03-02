@@ -134,6 +134,8 @@ public class TheaterService {
             }
         }
         reservation.setSeats(foundSeats.toArray(new String[0]));
+
+        // TODO : ajouter logique de pricing dans triple boucle
         System.out.println(remainingSeats);
         System.out.println(totalSeats);
         if (foundAllSeats) {
