@@ -1,6 +1,7 @@
 package org.kata.theater;
 
 import org.approvaltests.Approvals;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.kata.theater.data.Performance;
@@ -12,6 +13,8 @@ import java.util.List;
 class TheaterServiceTest {
 
     private TheaterService theaterService;
+
+
 
     @BeforeEach
     void setUp() {
@@ -28,6 +31,9 @@ class TheaterServiceTest {
         String reservation = theaterService.reservation(1L, 4, "STANDARD",
                 performance);
         Approvals.verify(reservation);
+
+        Assertions.assertThat(ReservationService.findReservation(123460)).isNotNull();
+
     }
 
     @Test
@@ -40,6 +46,8 @@ class TheaterServiceTest {
         String reservation = theaterService.reservation(1L, 4, "PREMIUM",
                 performance);
         Approvals.verify(reservation);
+
+        Assertions.assertThat(ReservationService.findReservation(123459)).isNotNull();
     }
 
     @Test
@@ -53,6 +61,8 @@ class TheaterServiceTest {
         String reservation = theaterService.reservation(1L, 4, "STANDARD",
                 performance);
         Approvals.verify(reservation);
+
+        Assertions.assertThat(ReservationService.findReservation(123457)).isNotNull();
     }
 
     @Test
@@ -67,6 +77,8 @@ class TheaterServiceTest {
         String reservation2 = theaterService.reservation(1L, 5, "STANDARD",
                 performance);
         Approvals.verify(reservation2);
+
+        Assertions.assertThat(ReservationService.findReservation(123461)).isNotNull();
     }
 
     @Test
@@ -80,6 +92,8 @@ class TheaterServiceTest {
         String reservation = theaterService.reservation(2L, 4, "STANDARD",
                 performance);
         Approvals.verify(reservation);
+
+        Assertions.assertThat(ReservationService.findReservation(123458)).isNotNull();
     }
 
     @Test
@@ -93,6 +107,8 @@ class TheaterServiceTest {
         String reservation = theaterService.reservation(2L, 4, "STANDARD",
                 performance);
         Approvals.verify(reservation);
+
+        Assertions.assertThat(ReservationService.findReservation(123456)).isNotNull();
     }
 
 }

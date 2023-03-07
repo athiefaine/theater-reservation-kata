@@ -102,9 +102,9 @@ public class TheaterService {
         if (foundAllSeats) {
             reservation.setStatus("PENDING");
         } else {
-
             reservation.setStatus("ABORTED");
         }
+
         ReservationService.updateReservation(reservation);
 
         if (performance.performanceNature.equals("PREMIERE") && remainingSeats < totalSeats * 0.5) {
