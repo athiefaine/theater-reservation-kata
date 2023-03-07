@@ -32,6 +32,7 @@ class TheaterServiceTest {
                 performance);
         Approvals.verify(reservation);
 
+        // TODO : add testing for reserved seat references
         Assertions.assertThat(ReservationService.findReservation(123460)).isNotNull();
 
     }
