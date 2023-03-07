@@ -19,57 +19,25 @@ public class TheaterService {
     private final TheaterRoomDao theaterRoomDao = new TheaterRoomDao();
     private final PerformancePriceDao performancePriceDao = new PerformancePriceDao();
 
-    // pattern sandwich ?
-// agrégats : TheatreTopology, Reservation
-// bounded contexts différents : Seat (topology, seat contains category)
-// vs Seat (reservation aka "Location", associated with a performance)
-
-
-    /* business rules :
-     * - for finding seats
-     *    - not booked seats
-     *    - adjacent seats for members of the same reservation (UL: Party)
-     *    - if the Performance is PREMIERE, half the seats are set apart for VIP (and not reservable)
-     *    - if the Performance is PREVIEW, 90% of the seats are set apart for VIP (and not reservable)
-     * - customer can have a subscription program allowing a 17.5% discount
-     */
-    /* règle supplémentaires
-     * - pricing différent en fonction de la zone (balcon, aile, centre etc.)
-     *    - ou alors chaque siège a sa catégorie de pricing ?
-     *    - en terme de tell don't ask, c'est le Seat qui expose sa catégorie de pricing (peu importe si c'est
-     *       une info portée par le seat ou si ça dépend de la zone dans laquelle le seat est ?
-     *  => ça peut servir à illustrer la notion d'ACL et de upstream/downstream
-     * - upstream : ils modélisent la category pricing par zone mais ils vont faire une v2 de leur modèle avec
-     *     un pricing individuel par Seat (et on a de la chance ils nous préviennent à l'avance ;-) )
-     * - downstream : ce qui nous intéresse c'est le pricing de chaque siège, donc autant avoir une ACL qui pour
-     *    l'instant le dérive depuis la zone et après coup le prendra directement du Seat
-     */
-
-    /*
-     * pour le pricing pur :
-     * - BC Catalogue : performances avec date, pièce, categoryRepresentation (BC Marketing plutôt ?) et salle
-     * - BC Topology : catégorie de Seat
-     * - BC Reservation : attribution des Seats, et l'état actuel de réservation de chaque Seat
-     * - BC Pricing : prix de base pour la Performance (soit prix de base  + ratio ou somme forfaitaire par catégorie de Seat)
-     * - BC Marketing : applique discount (ratio et/ou réduction forfaitaire)
-     *       - paying subscription (17.5% de discount)
-     *       - campagne temporaire offrant 20% à partir de 4 personnes
-     *    - design cible : on envoie le pricing brut au BC Marketing qui nous renvoie un pricing ajusté
-     *    - design cracra de départ : tout est au même endroit
-     */
-
 
     public String reservation(long customerId, int reservationCount, String reservationCategory, Performance performance) {
         Reservation reservation = new Reservation();
         StringBuilder sb = new StringBuilder();
-        sb.append("<reservation>\n"); // should be named ReservationRequest
+        int bookedSeats = 0;
+        List<String> foundSeats = new ArrayList<>();
+        Map<String, String> seatsCategory = new HashMap<>();
+        String zoneCategory;
+        int remainingSeats = 0;
+        int totalSeats = 0;
+        boolean foundAllSeats = false;
+
+        sb.append("<reservation>\n");
         sb.append("\t<performance>\n");
         sb.append("\t\t<play>").append(performance.play).append("</play>\n");
         sb.append("\t\t<date>").append(performance.startTime.toLocalDate()).append("</date>\n");
         sb.append("\t\t<time>").append(performance.startTime.toLocalTime()).append("</time>\n");
         sb.append("\t</performance>\n");
 
-        // get reservation id, notion entité/agrégat ? (faire un objet plus complexe ?)
         String res_id = ReservationService.initNewReservation();
         reservation.setReservationId(Long.parseLong(res_id));
         reservation.setPerformanceId(performance.id);
@@ -78,12 +46,6 @@ public class TheaterService {
         TheaterRoom room = theaterRoomDao.fetchTheaterRoom(performance.id);
 
         // find "reservationCount" first contiguous seats in any row
-        List<String> foundSeats = new ArrayList<>();
-        Map<String, String> seatsCategory = new HashMap<>();
-        String zoneCategory;
-        int remainingSeats = 0;
-        int totalSeats = 0; // devrait être porté par l'agrégat TheaterRoom, pour illustrer le Tell/Don't Ask
-        boolean foundAllSeats = false;
         for (int i = 0; i < room.getZones().length; i++) {
             Zone zone = room.getZones()[i];
             zoneCategory = zone.getCategory();
@@ -101,12 +63,6 @@ public class TheaterService {
                         }
                         if (!foundAllSeats) {
                             seatsForRow.add(aSeat.getSeatId());
-                            // TODO : changer l'état du seat à "BOOKED"
-                            // boite de pandore agrégat/entity/value object
-                            // au global, notion de ReservationRequest/ReservationAttempt
-                            // état FREE ou BOOKING_PENDING/BOOKED devrait être dérivé à partir d'un bookingRef porté par le l'entity Seat
-                            // BC Topology : Seat = ValueObject
-                            // BC Booking/Reservation : Seat = Entity, la partie mouvante c'est la bookingRef
                             streakOfNotReservedSeats++;
                             if (streakOfNotReservedSeats >= reservationCount) {
                                 for (String seat : seatsForRow) {
@@ -125,6 +81,7 @@ public class TheaterService {
                 if (foundAllSeats) {
                     for (int k = 0; k < row.getSeats().length; k++) {
                         Seat seat = row.getSeats()[k];
+                        bookedSeats++;
                         if (foundSeats.contains(seat.getSeatId())) {
                             seat.setStatus("BOOKING_PENDING");
                         }
@@ -135,28 +92,27 @@ public class TheaterService {
         }
         reservation.setSeats(foundSeats.toArray(new String[0]));
 
-        // TODO : ajouter logique de pricing dans triple boucle
         System.out.println(remainingSeats);
         System.out.println(totalSeats);
         if (foundAllSeats) {
             reservation.setStatus("PENDING");
         } else {
-            // TODO : branche pas couverte
+
             reservation.setStatus("ABORTED");
         }
         ReservationService.updateReservation(reservation);
-        // en vrai ce qui suit : BC Marketing
-        // il le renvoie dans une Map<PerformanceCategory, VIPRate>
+
         if (performance.performanceNature.equals("PREMIERE") && remainingSeats < totalSeats * 0.5) {
+            // keep 50% seats for VIP
             foundSeats = new ArrayList<>();
             System.out.println("Not enough VIP seats available for Premiere");
         } else if (performance.performanceNature.equals("PREVIEW") && remainingSeats < totalSeats * 0.9) {
+            // keep 10% seats for VIP
             foundSeats = new ArrayList<>();
             System.out.println("Not enough VIP seats available for Preview");
         }
 
-        // FULFILLABLE, ABORTED : on a un worklfow implicite
-        // workflow : par Entity ou succession de ValueObjects
+
         if (!foundSeats.isEmpty()) {
             sb.append("\t<reservationStatus>FULFILLABLE</reservationStatus>\n");
             sb.append("\t\t<seats>\n");
@@ -171,6 +127,8 @@ public class TheaterService {
             sb.append("\t<reservationStatus>ABORTED</reservationStatus>\n");
         }
 
+        BigDecimal adjustedPrice = BigDecimal.ZERO;
+
         // calculate raw price
         BigDecimal myPrice = performancePriceDao.fetchPerformancePrice(performance.id);
 
@@ -183,28 +141,25 @@ public class TheaterService {
         // check and apply discounts and fidelity program
         BigDecimal discountTime = VoucherProgramDao.fetchVoucherProgram(LocalDate.now()); // nasty dependency of course
 
-        // est-ce qu'il a un abonnement ou pas ?
+        // has he subscribed or not
         CustomerSubscriptionDao customerSubscriptionDao = new CustomerSubscriptionDao();
         boolean isSubscribed = customerSubscriptionDao.fetchCustomerSubscription(customerId);
 
         BigDecimal totalBilling = intialprice;
         if (isSubscribed) {
+            // apply a 25% discount when the user is subscribed
             BigDecimal removePercent = new BigDecimal("0.175").setScale(3, RoundingMode.DOWN);
             totalBilling = BigDecimal.ONE.subtract(removePercent).multiply(intialprice);
         }
         BigDecimal discountRatio = BigDecimal.ONE.subtract(discountTime);
         String total = totalBilling.multiply(discountRatio).setScale(2, RoundingMode.DOWN).toString() + "€";
-        // € ou $ => BC Billing, en dehors c'est la banque qui fait la conversion
 
-        // emit reservation summary
-        // pas d'agrégat métier, juste une string
         sb.append("\t<seatCategory>").append(reservationCategory).append("</seatCategory>\n");
         sb.append("\t<totalAmountDue>").append(total).append("</totalAmountDue>\n");
         sb.append("</reservation>\n");
         return sb.toString();
     }
 
-    // TODO : implement Reservation + ReservationDAO
     public void cancelReservation(String reservationId, Long performanceId, List<String> seats) {
         TheaterRoom theaterRoom = theaterRoomDao.fetchTheaterRoom(performanceId);
         for (int i = 0; i < theaterRoom.getZones().length; i++) {
