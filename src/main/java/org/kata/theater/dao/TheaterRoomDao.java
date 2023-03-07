@@ -6,6 +6,7 @@ import org.kata.theater.data.TheaterRoom;
 import org.kata.theater.data.Zone;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class TheaterRoomDao {
@@ -26,6 +27,23 @@ public class TheaterRoomDao {
     public void save(long id, TheaterRoom room) {
         theaterRoomMaps.put(id, room);
     }
+
+    public void saveSeats(long id, List<String> seatsID, String status) {
+        TheaterRoom room = theaterRoomMaps.get(id);
+        for (int i = 0; i < room.getZones().length; i++) {
+            Zone zone = room.getZones()[i];
+            for (int j = 0; j < zone.getRows().length; j++) {
+                Row row = zone.getRows()[j];
+                for (int k = 0; k < row.getSeats().length; k++) {
+                    Seat seat = row.getSeats()[k];
+                    if (seatsID.contains(seat.getSeatId())) {
+                        seat.setStatus(status);
+                    }
+                }
+            }
+        }
+    }
+
 
     private static TheaterRoom fetchRoomForPerformance1() {
         // ici on sent venir l'utilité forte d'un TestDataBuilder, auquel on devrait passer pour chaque zone :

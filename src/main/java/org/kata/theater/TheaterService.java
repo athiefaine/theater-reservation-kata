@@ -19,6 +19,8 @@ public class TheaterService {
     private final TheaterRoomDao theaterRoomDao = new TheaterRoomDao();
     private final PerformancePriceDao performancePriceDao = new PerformancePriceDao();
 
+    boolean debug = false;
+
 
     public String reservation(long customerId, int reservationCount, String reservationCategory, Performance performance) {
         Reservation reservation = new Reservation();
@@ -83,10 +85,13 @@ public class TheaterService {
                         Seat seat = row.getSeats()[k];
                         bookedSeats++;
                         if (foundSeats.contains(seat.getSeatId())) {
-                            seat.setStatus("BOOKING_PENDING");
+                            if (debug) {
+                                System.out.println("MIAOU!!! : Seat " + seat.getSeatId() + " will be saved as PENDING");
+                            }
                         }
                     }
-                    theaterRoomDao.save(performance.id, room);
+
+                    theaterRoomDao.saveSeats(performance.id, foundSeats, "BOOKING_PENDING");
                 }
             }
         }
