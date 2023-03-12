@@ -4,10 +4,15 @@ import org.kata.theater.dao.CustomerSubscriptionDao;
 import org.kata.theater.dao.PerformancePriceDao;
 import org.kata.theater.dao.TheaterRoomDao;
 import org.kata.theater.dao.VoucherProgramDao;
-import org.kata.theater.data.*;
+import org.kata.theater.data.Performance;
+import org.kata.theater.data.Reservation;
+import org.kata.theater.data.Row;
+import org.kata.theater.data.Seat;
+import org.kata.theater.data.TheaterRoom;
+import org.kata.theater.data.Zone;
+import org.kata.theater.domain.price.Amount;
+import org.kata.theater.domain.price.Rate;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
@@ -132,32 +137,32 @@ public class TheaterService {
             sb.append("\t<reservationStatus>ABORTED</reservationStatus>\n");
         }
 
-        BigDecimal adjustedPrice = BigDecimal.ZERO;
+        Amount adjustedPrice = Amount.nothing();
 
         // calculate raw price
-        BigDecimal myPrice = performancePriceDao.fetchPerformancePrice(performance.id);
+        Amount myPrice = new Amount(performancePriceDao.fetchPerformancePrice(performance.id));
 
-        BigDecimal intialprice = BigDecimal.ZERO.setScale(2, RoundingMode.DOWN);
+        Amount intialprice = Amount.nothing();
         for (String foundSeat : foundSeats) {
-            BigDecimal categoryRatio = seatsCategory.get(foundSeat).equals("STANDARD") ? BigDecimal.ONE : new BigDecimal("1.5");
+            Rate categoryRatio = seatsCategory.get(foundSeat).equals("STANDARD") ? Rate.fully() : new Rate("1.5");
             intialprice = intialprice.add(myPrice.multiply(categoryRatio));
         }
 
         // check and apply discounts and fidelity program
-        BigDecimal discountTime = VoucherProgramDao.fetchVoucherProgram(LocalDate.now()); // nasty dependency of course
+        Rate discountTime = new Rate(VoucherProgramDao.fetchVoucherProgram(LocalDate.now())); // nasty dependency of course
 
         // has he subscribed or not
         CustomerSubscriptionDao customerSubscriptionDao = new CustomerSubscriptionDao();
         boolean isSubscribed = customerSubscriptionDao.fetchCustomerSubscription(customerId);
 
-        BigDecimal totalBilling = intialprice;
+        Amount totalBilling = new Amount(intialprice);
         if (isSubscribed) {
             // apply a 25% discount when the user is subscribed
-            BigDecimal removePercent = new BigDecimal("0.175").setScale(3, RoundingMode.DOWN);
-            totalBilling = BigDecimal.ONE.subtract(removePercent).multiply(intialprice);
+            Rate removePercent = new Rate("0.175");
+            totalBilling = totalBilling.multiply(Rate.fully().subtract(removePercent));
         }
-        BigDecimal discountRatio = BigDecimal.ONE.subtract(discountTime);
-        String total = totalBilling.multiply(discountRatio).setScale(2, RoundingMode.DOWN).toString() + "€";
+        Rate discountRatio = Rate.fully().subtract(discountTime);
+        String total = totalBilling.multiply(discountRatio).asString() + "€";
 
         sb.append("\t<seatCategory>").append(reservationCategory).append("</seatCategory>\n");
         sb.append("\t<totalAmountDue>").append(total).append("</totalAmountDue>\n");
