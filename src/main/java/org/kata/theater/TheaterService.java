@@ -24,13 +24,10 @@ public class TheaterService {
     private final TheaterRoomDao theaterRoomDao = new TheaterRoomDao();
     private final PerformancePriceDao performancePriceDao = new PerformancePriceDao();
 
-    boolean debug = false;
-
 
     public String reservation(long customerId, int reservationCount, String reservationCategory, Performance performance) {
         Reservation reservation = new Reservation();
         StringBuilder sb = new StringBuilder();
-        int bookedSeats = 0;
         List<String> foundSeats = new ArrayList<>();
         Map<String, String> seatsCategory = new HashMap<>();
         String zoneCategory;
@@ -86,24 +83,12 @@ public class TheaterService {
                     }
                 }
                 if (foundAllSeats) {
-                    for (int k = 0; k < row.getSeats().length; k++) {
-                        Seat seat = row.getSeats()[k];
-                        bookedSeats++;
-                        if (foundSeats.contains(seat.getSeatId())) {
-                            if (debug) {
-                                System.out.println("MIAOU!!! : Seat " + seat.getSeatId() + " will be saved as PENDING");
-                            }
-                        }
-                    }
-
                     theaterRoomDao.saveSeats(performance.id, foundSeats, "BOOKING_PENDING");
                 }
             }
         }
         reservation.setSeats(foundSeats.toArray(new String[0]));
 
-        System.out.println(remainingSeats);
-        System.out.println(totalSeats);
         if (foundAllSeats) {
             reservation.setStatus("PENDING");
         } else {
@@ -115,11 +100,9 @@ public class TheaterService {
         if (performance.performanceNature.equals("PREMIERE") && remainingSeats < totalSeats * 0.5) {
             // keep 50% seats for VIP
             foundSeats = new ArrayList<>();
-            System.out.println("Not enough VIP seats available for Premiere");
         } else if (performance.performanceNature.equals("PREVIEW") && remainingSeats < totalSeats * 0.9) {
             // keep 10% seats for VIP
             foundSeats = new ArrayList<>();
-            System.out.println("Not enough VIP seats available for Preview");
         }
 
 
@@ -137,8 +120,6 @@ public class TheaterService {
             sb.append("\t<reservationStatus>ABORTED</reservationStatus>\n");
         }
 
-        Amount adjustedPrice = Amount.nothing();
-
         // calculate raw price
         Amount myPrice = new Amount(performancePriceDao.fetchPerformancePrice(performance.id));
 
@@ -151,13 +132,11 @@ public class TheaterService {
         // check and apply discounts and fidelity program
         Rate discountTime = new Rate(VoucherProgramDao.fetchVoucherProgram(performance.startTime.toLocalDate()));
 
-        // has he subscribed or not
         CustomerSubscriptionDao customerSubscriptionDao = new CustomerSubscriptionDao();
         boolean isSubscribed = customerSubscriptionDao.fetchCustomerSubscription(customerId);
 
         Amount totalBilling = new Amount(intialprice);
         if (isSubscribed) {
-            // apply a 25% discount when the user is subscribed
             totalBilling = totalBilling.multiply(Rate.discountPercent("17.5"));
         }
         Rate discountRatio = Rate.fully().subtract(discountTime);
