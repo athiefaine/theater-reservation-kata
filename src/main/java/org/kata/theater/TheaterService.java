@@ -26,15 +26,8 @@ public class TheaterService {
 
 
     public String reservation(long customerId, int reservationCount, String reservationCategory, Performance performance) {
-        Reservation reservation = new Reservation();
-        StringBuilder sb = new StringBuilder();
-        List<String> foundSeats = new ArrayList<>();
-        Map<String, String> seatsCategory = new HashMap<>();
-        String zoneCategory;
-        int remainingSeats = 0;
-        int totalSeats = 0;
-        boolean foundAllSeats = false;
 
+        StringBuilder sb = new StringBuilder();
         sb.append("<reservation>\n");
         sb.append("\t<performance>\n");
         sb.append("\t\t<play>").append(performance.play).append("</play>\n");
@@ -43,6 +36,7 @@ public class TheaterService {
         sb.append("\t</performance>\n");
 
         String res_id = ReservationService.initNewReservation();
+        Reservation reservation = new Reservation();
         reservation.setReservationId(Long.parseLong(res_id));
         reservation.setPerformanceId(performance.id);
         sb.append("\t<reservationId>").append(res_id).append("</reservationId>\n");
@@ -50,9 +44,14 @@ public class TheaterService {
         TheaterRoom room = theaterRoomDao.fetchTheaterRoom(performance.id);
 
         // find "reservationCount" first contiguous seats in any row
+        int remainingSeats = 0;
+        int totalSeats = 0;
+        boolean foundAllSeats = false;
+        List<String> foundSeats = new ArrayList<>();
+        Map<String, String> seatsCategory = new HashMap<>();
         for (int i = 0; i < room.getZones().length; i++) {
             Zone zone = room.getZones()[i];
-            zoneCategory = zone.getCategory();
+            String zoneCategory = zone.getCategory();
             for (int j = 0; j < zone.getRows().length; j++) {
                 Row row = zone.getRows()[j];
                 List<String> seatsForRow = new ArrayList<>();
@@ -121,25 +120,24 @@ public class TheaterService {
         }
 
         // calculate raw price
-        Amount myPrice = new Amount(performancePriceDao.fetchPerformancePrice(performance.id));
-
-        Amount intialprice = Amount.nothing();
+        Amount rawPrice = Amount.nothing();
+        Amount seatBasePrice = new Amount(performancePriceDao.fetchPerformancePrice(performance.id));
         for (String foundSeat : foundSeats) {
             Rate categoryRatio = seatsCategory.get(foundSeat).equals("STANDARD") ? Rate.fully() : new Rate("1.5");
-            intialprice = intialprice.add(myPrice.apply(categoryRatio));
+            rawPrice = rawPrice.add(seatBasePrice.apply(categoryRatio));
         }
 
         // check and apply discounts and fidelity program
-        Rate discountTime = new Rate(VoucherProgramDao.fetchVoucherProgram(LocalDate.now())); // nasty dependency of course
 
         CustomerSubscriptionDao customerSubscriptionDao = new CustomerSubscriptionDao();
         boolean isSubscribed = customerSubscriptionDao.fetchCustomerSubscription(customerId);
-
-        Amount totalBilling = new Amount(intialprice);
+        Amount totalBilling = new Amount(rawPrice);
         if (isSubscribed) {
             totalBilling = totalBilling.apply(Rate.discountPercent("17.5"));
         }
-        Rate discountRatio = Rate.fully().subtract(discountTime);
+
+        Rate discount = new Rate(VoucherProgramDao.fetchVoucherProgram(LocalDate.now())); // nasty dependency of course
+        Rate discountRatio = Rate.fully().subtract(discount);
         String total = totalBilling.apply(discountRatio).asString() + "€";
 
         sb.append("\t<seatCategory>").append(reservationCategory).append("</seatCategory>\n");
