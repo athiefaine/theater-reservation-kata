@@ -8,6 +8,11 @@ public class Amount {
 
     private final BigDecimal value;
 
+    public Amount(String value) {
+        this.value = new BigDecimal(value).setScale(2, RoundingMode.HALF_DOWN);
+    }
+
+
     public Amount(BigDecimal value) {
         this.value = value.setScale(2, RoundingMode.HALF_DOWN);
     }
@@ -47,5 +52,12 @@ public class Amount {
     @Override
     public int hashCode() {
         return Objects.hash(value);
+    }
+
+    @Override
+    public String toString() {
+        return "Amount{" +
+                "value=" + value +
+                '}';
     }
 }
