@@ -13,7 +13,7 @@ public class Rate {
     }
 
     public Rate(BigDecimal value) {
-        this.value = value.setScale(3, RoundingMode.HALF_DOWN);
+        this.value = value;
     }
 
     public Rate(Rate other) {
@@ -24,20 +24,12 @@ public class Rate {
         return new Rate(BigDecimal.ONE);
     }
 
-    public static Rate discountPercent(String discountPercent) {
-        return Rate.fully().subtract(new Rate(discountPercent).multiply(new Rate("0.01")));
-    }
-
-    public Amount apply(Amount amount) {
+    public Amount multiply(Amount amount) {
         return new Amount(amount.asBigDecimal().multiply(this.value));
     }
 
     public Rate add(Rate other) {
         return new Rate(this.value.add(other.value));
-    }
-
-    public Rate multiply(Rate other) {
-        return new Rate(this.value.multiply(other.value));
     }
 
     public Rate subtract(Rate other) {
@@ -59,12 +51,5 @@ public class Rate {
     @Override
     public int hashCode() {
         return Objects.hash(value);
-    }
-
-    @Override
-    public String toString() {
-        return "Rate{" +
-                "value=" + value +
-                '}';
     }
 }

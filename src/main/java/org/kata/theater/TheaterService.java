@@ -158,7 +158,8 @@ public class TheaterService {
         Amount totalBilling = new Amount(intialprice);
         if (isSubscribed) {
             // apply a 25% discount when the user is subscribed
-            totalBilling = totalBilling.apply(Rate.discountPercent("17.5"));
+            Rate removePercent = new Rate("0.175");
+            totalBilling = totalBilling.multiply(Rate.fully().subtract(removePercent));
         }
         Rate discountRatio = Rate.fully().subtract(discountTime);
         String total = totalBilling.apply(discountRatio).asString() + "€";
