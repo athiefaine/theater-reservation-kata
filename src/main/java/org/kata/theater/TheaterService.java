@@ -145,7 +145,7 @@ public class TheaterService {
         Amount intialprice = Amount.nothing();
         for (String foundSeat : foundSeats) {
             Rate categoryRatio = seatsCategory.get(foundSeat).equals("STANDARD") ? Rate.fully() : new Rate("1.5");
-            intialprice = intialprice.add(myPrice.multiply(categoryRatio));
+            intialprice = intialprice.add(myPrice.apply(categoryRatio));
         }
 
         // check and apply discounts and fidelity program
@@ -158,10 +158,10 @@ public class TheaterService {
         Amount totalBilling = new Amount(intialprice);
         if (isSubscribed) {
             // apply a 25% discount when the user is subscribed
-            totalBilling = totalBilling.multiply(Rate.discountPercent("17.5"));
+            totalBilling = totalBilling.apply(Rate.discountPercent("17.5"));
         }
         Rate discountRatio = Rate.fully().subtract(discountTime);
-        String total = totalBilling.multiply(discountRatio).asString() + "€";
+        String total = totalBilling.apply(discountRatio).asString() + "€";
 
         sb.append("\t<seatCategory>").append(reservationCategory).append("</seatCategory>\n");
         sb.append("\t<totalAmountDue>").append(total).append("</totalAmountDue>\n");

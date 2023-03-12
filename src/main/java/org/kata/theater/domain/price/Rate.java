@@ -25,10 +25,10 @@ public class Rate {
     }
 
     public static Rate discountPercent(String discountPercent) {
-        return Rate.fully().subtract(new Rate(new BigDecimal(discountPercent).divide(new BigDecimal("100"))));
+        return Rate.fully().subtract(new Rate(new BigDecimal(discountPercent).multiply(new BigDecimal("0.01"))));
     }
 
-    public Amount multiply(Amount amount) {
+    public Amount apply(Amount amount) {
         return new Amount(amount.asBigDecimal().multiply(this.value));
     }
 

@@ -21,7 +21,7 @@ public class Amount {
         this.value = BigDecimal.ZERO.add(other.value);
     }
 
-    public Amount multiply(Rate rate) {
+    public Amount apply(Rate rate) {
         return new Amount(this.value.multiply(rate.asBigDecimal()));
     }
 
