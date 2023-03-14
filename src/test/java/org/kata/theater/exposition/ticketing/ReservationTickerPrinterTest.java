@@ -1,24 +1,27 @@
-package org.kata.theater;
+package org.kata.theater.exposition.ticketing;
 
 import org.approvaltests.Approvals;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.kata.theater.ReservationService;
+import org.kata.theater.TheaterService;
 import org.kata.theater.data.Performance;
 
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
 
-class TheaterServiceTest {
+class ReservationTickerPrinterTest {
 
+    private ReservationTickerPrinter reservationTickerPrinter;
     private TheaterService theaterService;
-
 
 
     @BeforeEach
     void setUp() {
         theaterService = new TheaterService();
+        reservationTickerPrinter = new ReservationTickerPrinter(theaterService);
     }
 
     @Test
@@ -28,7 +31,7 @@ class TheaterServiceTest {
         performance.play = "The CICD by Corneille";
         performance.startTime = LocalDate.of(2023, Month.APRIL, 22).atTime(21, 0);
         performance.performanceNature = "PREMIERE";
-        String reservation = theaterService.reservation(1L, 4, "STANDARD",
+        String reservation = reservationTickerPrinter.printReservation(1L, 4, "STANDARD",
                 performance);
         Approvals.verify(reservation);
 
@@ -44,7 +47,7 @@ class TheaterServiceTest {
         performance.play = "The CICD by Corneille";
         performance.startTime = LocalDate.of(2023, Month.APRIL, 22).atTime(21, 0);
         performance.performanceNature = "PREMIERE";
-        String reservation = theaterService.reservation(1L, 4, "PREMIUM",
+        String reservation = reservationTickerPrinter.printReservation(1L, 4, "PREMIUM",
                 performance);
         Approvals.verify(reservation);
 
@@ -59,7 +62,7 @@ class TheaterServiceTest {
         performance.play = "The CICD by Corneille";
         performance.startTime = LocalDate.of(2023, Month.APRIL, 22).atTime(21, 0);
         performance.performanceNature = "PREMIERE";
-        String reservation = theaterService.reservation(1L, 4, "STANDARD",
+        String reservation = reservationTickerPrinter.printReservation(1L, 4, "STANDARD",
                 performance);
         Approvals.verify(reservation);
 
@@ -73,9 +76,9 @@ class TheaterServiceTest {
         performance.play = "The CICD by Corneille";
         performance.startTime = LocalDate.of(2023, Month.APRIL, 22).atTime(21, 0);
         performance.performanceNature = "PREMIERE";
-        String reservation1 = theaterService.reservation(1L, 4, "STANDARD",
+        String reservation1 = reservationTickerPrinter.printReservation(1L, 4, "STANDARD",
                 performance);
-        String reservation2 = theaterService.reservation(1L, 5, "STANDARD",
+        String reservation2 = reservationTickerPrinter.printReservation(1L, 5, "STANDARD",
                 performance);
         Approvals.verify(reservation2);
 
@@ -90,7 +93,7 @@ class TheaterServiceTest {
         performance.startTime = LocalDate.of(2023, Month.MARCH, 21).atTime(21, 0);
         performance.performanceNature = "PREVIEW";
 
-        String reservation = theaterService.reservation(2L, 4, "STANDARD",
+        String reservation = reservationTickerPrinter.printReservation(2L, 4, "STANDARD",
                 performance);
         Approvals.verify(reservation);
 
@@ -105,7 +108,7 @@ class TheaterServiceTest {
         performance.startTime = LocalDate.of(2023, Month.MARCH, 21).atTime(21, 0);
         performance.performanceNature = "PREMIERE";
 
-        String reservation = theaterService.reservation(2L, 4, "STANDARD",
+        String reservation = reservationTickerPrinter.printReservation(2L, 4, "STANDARD",
                 performance);
         Approvals.verify(reservation);
 

@@ -16,7 +16,6 @@ import org.kata.theater.domain.reservation.ReservationRequest;
 import org.kata.theater.domain.reservation.ReservationSeat;
 
 import java.time.LocalDate;
-import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,8 +24,7 @@ public class TheaterService {
     private final TheaterRoomDao theaterRoomDao = new TheaterRoomDao();
     private final PerformancePriceDao performancePriceDao = new PerformancePriceDao();
 
-
-    public String reservation(long customerId, int reservationCount, String reservationCategory, Performance performance) {
+    public ReservationRequest reservation(long customerId, int reservationCount, String reservationCategory, Performance performance) {
         String reservationId = ReservationService.initNewReservation();
         Reservation reservation = new Reservation();
         reservation.setReservationId(Long.parseLong(reservationId));
@@ -102,7 +100,6 @@ public class TheaterService {
         }
 
 
-
         // calculate raw price
         Amount rawPrice = Amount.nothing();
         Amount seatBasePrice = new Amount(performancePriceDao.fetchPerformancePrice(performance.id));
@@ -124,45 +121,16 @@ public class TheaterService {
         Rate discountRatio = Rate.fully().subtract(discount);
         totalBilling = totalBilling.apply(discountRatio);
 
-        // TODO : define builder for ReservationRequest
-        ReservationRequest reservationRequest = ReservationRequest.builder()
+        return ReservationRequest.builder()
                 .reservationId(reservationId)
                 .performance(performance)
                 .reservationCategory(reservationCategory)
                 .reservedSeats(reservedSeats)
                 .totalBilling(totalBilling)
                 .build();
-        return toXml(reservationRequest);
     }
 
-    // TODO : move to an exposition layer with something like ReservationTicketPrinter
-    private static String toXml(ReservationRequest reservationRequest) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("<reservation>\n");
-        sb.append("\t<performance>\n");
-        sb.append("\t\t<play>").append(reservationRequest.performanceTitle()).append("</play>\n");
-        sb.append("\t\t<date>").append(reservationRequest.date()).append("</date>\n");
-        sb.append("\t\t<time>").append(reservationRequest.time()).append("</time>\n");
-        sb.append("\t</performance>\n");
-        sb.append("\t<reservationId>").append(reservationRequest.reservationId()).append("</reservationId>\n");
-        if (reservationRequest.isFulfillable()) {
-            sb.append("\t<reservationStatus>FULFILLABLE</reservationStatus>\n");
-            sb.append("\t\t<seats>\n");
-            for (ReservationSeat reservedSeat : reservationRequest.reservedSeats()) {
-                sb.append("\t\t\t<seat>\n");
-                sb.append("\t\t\t\t<id>").append(reservedSeat.getSeatReference()).append("</id>\n");
-                sb.append("\t\t\t\t<category>").append(reservedSeat.getCategory()).append("</category>\n");
-                sb.append("\t\t\t</seat>\n");
-            }
-            sb.append("\t\t</seats>\n");
-        } else {
-            sb.append("\t<reservationStatus>ABORTED</reservationStatus>\n");
-        }
-        sb.append("\t<seatCategory>").append(reservationRequest.reservationCategory()).append("</seatCategory>\n");
-        sb.append("\t<totalAmountDue>").append(reservationRequest.totalBilling().asString()).append("€").append("</totalAmountDue>\n");
-        sb.append("</reservation>\n");
-        return sb.toString();
-    }
+
 
     public void cancelReservation(String reservationId, Long performanceId, List<String> seats) {
         TheaterRoom theaterRoom = theaterRoomDao.fetchTheaterRoom(performanceId);
@@ -180,28 +148,5 @@ public class TheaterService {
         }
         theaterRoomDao.save(performanceId, theaterRoom);
         ReservationService.cancelReservation(Long.parseLong(reservationId));
-    }
-
-
-    public static void main(String[] args) {
-        Performance performance = new Performance();
-        performance.id = 1L;
-        performance.play = "The CICD by Corneille";
-        performance.startTime = LocalDate.of(2023, Month.APRIL, 22).atTime(21, 0);
-        performance.performanceNature = "PREMIERE";
-        TheaterService theaterService = new TheaterService();
-        System.out.println(theaterService.reservation(1L, 4, "STANDARD",
-                performance));
-
-        System.out.println(theaterService.reservation(1L, 5, "STANDARD",
-                performance));
-
-        Performance performance2 = new Performance();
-        performance2.id = 2L;
-        performance2.play = "Les fourberies de Scala - Molière";
-        performance2.startTime = LocalDate.of(2023, Month.MARCH, 21).atTime(21, 0);
-        performance2.performanceNature = "PREVIEW";
-        System.out.println(theaterService.reservation(2L, 4, "STANDARD",
-                performance2));
     }
 }
