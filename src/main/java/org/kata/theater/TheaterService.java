@@ -27,19 +27,11 @@ public class TheaterService {
 
     public String reservation(long customerId, int reservationCount, String reservationCategory, Performance performance) {
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("<reservation>\n");
-        sb.append("\t<performance>\n");
-        sb.append("\t\t<play>").append(performance.play).append("</play>\n");
-        sb.append("\t\t<date>").append(performance.startTime.toLocalDate()).append("</date>\n");
-        sb.append("\t\t<time>").append(performance.startTime.toLocalTime()).append("</time>\n");
-        sb.append("\t</performance>\n");
 
         String res_id = ReservationService.initNewReservation();
         Reservation reservation = new Reservation();
         reservation.setReservationId(Long.parseLong(res_id));
         reservation.setPerformanceId(performance.id);
-        sb.append("\t<reservationId>").append(res_id).append("</reservationId>\n");
 
         TheaterRoom room = theaterRoomDao.fetchTheaterRoom(performance.id);
 
@@ -105,19 +97,6 @@ public class TheaterService {
         }
 
 
-        if (!foundSeats.isEmpty()) {
-            sb.append("\t<reservationStatus>FULFILLABLE</reservationStatus>\n");
-            sb.append("\t\t<seats>\n");
-            for (String s : foundSeats) {
-                sb.append("\t\t\t<seat>\n");
-                sb.append("\t\t\t\t<id>").append(s).append("</id>\n");
-                sb.append("\t\t\t\t<category>").append(seatsCategory.get(s)).append("</category>\n");
-                sb.append("\t\t\t</seat>\n");
-            }
-            sb.append("\t\t</seats>\n");
-        } else {
-            sb.append("\t<reservationStatus>ABORTED</reservationStatus>\n");
-        }
 
         // calculate raw price
         Amount rawPrice = Amount.nothing();
@@ -138,10 +117,31 @@ public class TheaterService {
 
         Rate discount = new Rate(VoucherProgramDao.fetchVoucherProgram(LocalDate.now())); // nasty dependency of course
         Rate discountRatio = Rate.fully().subtract(discount);
-        String total = totalBilling.apply(discountRatio).asString() + "€";
+        totalBilling = totalBilling.apply(discountRatio);
 
+        StringBuilder sb = new StringBuilder();
+        sb.append("<reservation>\n");
+        sb.append("\t<performance>\n");
+        sb.append("\t\t<play>").append(performance.play).append("</play>\n");
+        sb.append("\t\t<date>").append(performance.startTime.toLocalDate()).append("</date>\n");
+        sb.append("\t\t<time>").append(performance.startTime.toLocalTime()).append("</time>\n");
+        sb.append("\t</performance>\n");
+        sb.append("\t<reservationId>").append(res_id).append("</reservationId>\n");
+        if (!foundSeats.isEmpty()) {
+            sb.append("\t<reservationStatus>FULFILLABLE</reservationStatus>\n");
+            sb.append("\t\t<seats>\n");
+            for (String s : foundSeats) {
+                sb.append("\t\t\t<seat>\n");
+                sb.append("\t\t\t\t<id>").append(s).append("</id>\n");
+                sb.append("\t\t\t\t<category>").append(seatsCategory.get(s)).append("</category>\n");
+                sb.append("\t\t\t</seat>\n");
+            }
+            sb.append("\t\t</seats>\n");
+        } else {
+            sb.append("\t<reservationStatus>ABORTED</reservationStatus>\n");
+        }
         sb.append("\t<seatCategory>").append(reservationCategory).append("</seatCategory>\n");
-        sb.append("\t<totalAmountDue>").append(total).append("</totalAmountDue>\n");
+        sb.append("\t<totalAmountDue>").append(totalBilling.asString()).append("€").append("</totalAmountDue>\n");
         sb.append("</reservation>\n");
         return sb.toString();
     }
