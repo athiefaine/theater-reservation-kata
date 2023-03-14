@@ -12,6 +12,7 @@ import org.kata.theater.data.TheaterRoom;
 import org.kata.theater.data.Zone;
 import org.kata.theater.domain.price.Amount;
 import org.kata.theater.domain.price.Rate;
+import org.kata.theater.domain.reservation.ReservationRequest;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -119,29 +120,33 @@ public class TheaterService {
         Rate discountRatio = Rate.fully().subtract(discount);
         totalBilling = totalBilling.apply(discountRatio);
 
+        return toXml(new ReservationRequest(reservationCategory, performance, res_id, foundSeats, seatsCategory, totalBilling));
+    }
+
+    private static String toXml(ReservationRequest reservationRequest) {
         StringBuilder sb = new StringBuilder();
         sb.append("<reservation>\n");
         sb.append("\t<performance>\n");
-        sb.append("\t\t<play>").append(performance.play).append("</play>\n");
-        sb.append("\t\t<date>").append(performance.startTime.toLocalDate()).append("</date>\n");
-        sb.append("\t\t<time>").append(performance.startTime.toLocalTime()).append("</time>\n");
+        sb.append("\t\t<play>").append(reservationRequest.getPerformance().play).append("</play>\n");
+        sb.append("\t\t<date>").append(reservationRequest.getPerformance().startTime.toLocalDate()).append("</date>\n");
+        sb.append("\t\t<time>").append(reservationRequest.getPerformance().startTime.toLocalTime()).append("</time>\n");
         sb.append("\t</performance>\n");
-        sb.append("\t<reservationId>").append(res_id).append("</reservationId>\n");
-        if (!foundSeats.isEmpty()) {
+        sb.append("\t<reservationId>").append(reservationRequest.getRes_id()).append("</reservationId>\n");
+        if (!reservationRequest.getFoundSeats().isEmpty()) {
             sb.append("\t<reservationStatus>FULFILLABLE</reservationStatus>\n");
             sb.append("\t\t<seats>\n");
-            for (String s : foundSeats) {
+            for (String s : reservationRequest.getFoundSeats()) {
                 sb.append("\t\t\t<seat>\n");
                 sb.append("\t\t\t\t<id>").append(s).append("</id>\n");
-                sb.append("\t\t\t\t<category>").append(seatsCategory.get(s)).append("</category>\n");
+                sb.append("\t\t\t\t<category>").append(reservationRequest.getSeatsCategory().get(s)).append("</category>\n");
                 sb.append("\t\t\t</seat>\n");
             }
             sb.append("\t\t</seats>\n");
         } else {
             sb.append("\t<reservationStatus>ABORTED</reservationStatus>\n");
         }
-        sb.append("\t<seatCategory>").append(reservationCategory).append("</seatCategory>\n");
-        sb.append("\t<totalAmountDue>").append(totalBilling.asString()).append("€").append("</totalAmountDue>\n");
+        sb.append("\t<seatCategory>").append(reservationRequest.getReservationCategory()).append("</seatCategory>\n");
+        sb.append("\t<totalAmountDue>").append(reservationRequest.getTotalBilling().asString()).append("€").append("</totalAmountDue>\n");
         sb.append("</reservation>\n");
         return sb.toString();
     }
