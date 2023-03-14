@@ -18,9 +18,8 @@ import org.kata.theater.domain.reservation.ReservationSeat;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 public class TheaterService {
     private final TheaterRoomDao theaterRoomDao = new TheaterRoomDao();
@@ -28,8 +27,6 @@ public class TheaterService {
 
 
     public String reservation(long customerId, int reservationCount, String reservationCategory, Performance performance) {
-
-
         String reservationId = ReservationService.initNewReservation();
         Reservation reservation = new Reservation();
         reservation.setReservationId(Long.parseLong(reservationId));
@@ -41,10 +38,6 @@ public class TheaterService {
         int remainingSeats = 0;
         int totalSeats = 0;
         boolean foundAllSeats = false;
-
-        // TODO: remove foundSeats and seatsCategory
-        List<String> foundSeats = new ArrayList<>();
-        Map<String, String> seatsCategory = new HashMap<>();
         ArrayList<ReservationSeat> reservedSeats = new ArrayList<>();
         for (int i = 0; i < room.getZones().length; i++) {
             Zone zone = room.getZones()[i];
@@ -66,8 +59,6 @@ public class TheaterService {
                             streakOfNotReservedSeats++;
                             if (streakOfNotReservedSeats >= reservationCount) {
                                 for (String seat : seatsForRow) {
-                                    foundSeats.add(seat);
-                                    seatsCategory.put(seat, zoneCategory);
                                     reservedSeats.add(new ReservationSeat(seat, zoneCategory));
                                 }
                                 foundAllSeats = true;
@@ -80,27 +71,33 @@ public class TheaterService {
                     }
                 }
                 if (foundAllSeats) {
-                    theaterRoomDao.saveSeats(performance.id, foundSeats, "BOOKING_PENDING");
+                    // TODO :introduce repository that takes a domain object that contains reservedSeats
+                    // TODO : shouldn't be it saved at the end of the method ?
+                    theaterRoomDao.saveSeats(performance.id, reservedSeats.stream()
+                                    .map(ReservationSeat::getSeatReference)
+                            .collect(Collectors.toList()), "BOOKING_PENDING");
                 }
             }
         }
-        reservation.setSeats(foundSeats.toArray(new String[0]));
+        reservation.setSeats(reservedSeats.stream()
+                .map(ReservationSeat::getSeatReference)
+                .toArray(String[]::new));
 
-        if (foundAllSeats) {
+        if (!reservedSeats.isEmpty()) {
             reservation.setStatus("PENDING");
         } else {
             reservation.setStatus("ABORTED");
         }
 
+        // TODO : introduce a DAO that saves a ReservationRequest in front of ReservationRequest
+        // TODO : shouldn't be it saved at the end of the method ?
         ReservationService.updateReservation(reservation);
 
         if (performance.performanceNature.equals("PREMIERE") && remainingSeats < totalSeats * 0.5) {
             // keep 50% seats for VIP
-            foundSeats = new ArrayList<>();
             reservedSeats = new ArrayList<>();
         } else if (performance.performanceNature.equals("PREVIEW") && remainingSeats < totalSeats * 0.9) {
             // keep 10% seats for VIP
-            foundSeats = new ArrayList<>();
             reservedSeats = new ArrayList<>();
         }
 
