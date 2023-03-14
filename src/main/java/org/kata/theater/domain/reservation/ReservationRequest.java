@@ -6,31 +6,25 @@ import org.kata.theater.domain.price.Amount;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.Map;
 
 public class ReservationRequest {
     private final String reservationCategory;
     private final Performance performance;
     private final String reservationId;
-    private final List<String> foundSeats;
-    private final Map<String, String> seatsCategory;
+
+    private final List<ReservationSeat> reservedSeats;
     private final Amount totalBilling;
 
-    public ReservationRequest(String reservationCategory, Performance performance, String reservationId, List<String> foundSeats, Map<String, String> seatsCategory, Amount totalBilling) {
+    public ReservationRequest(String reservationCategory, Performance performance, String reservationId, List<ReservationSeat> reservationSeats, Amount totalBilling) {
         this.reservationCategory = reservationCategory;
         this.performance = performance;
         this.reservationId = reservationId;
-        this.foundSeats = foundSeats;
-        this.seatsCategory = seatsCategory;
+        this.reservedSeats = reservationSeats;
         this.totalBilling = totalBilling;
     }
 
-    public String seatCategory(String seatReference) {
-        return getSeatsCategory().get(seatReference);
-    }
-
     public boolean isFulfillable() {
-        return !foundSeats.isEmpty();
+        return !reservedSeats.isEmpty();
     }
 
     public String performanceTitle() {
@@ -49,20 +43,16 @@ public class ReservationRequest {
         return reservationCategory;
     }
 
+    public List<ReservationSeat> reservedSeats() {
+        return reservedSeats;
+    }
+
     public Performance getPerformance() {
         return performance;
     }
 
     public String reservationId() {
         return reservationId;
-    }
-
-    public List<String> reservedSeats() {
-        return foundSeats;
-    }
-
-    public Map<String, String> getSeatsCategory() {
-        return seatsCategory;
     }
 
     public Amount totalBilling() {
