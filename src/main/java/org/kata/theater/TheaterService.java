@@ -13,6 +13,7 @@ import org.kata.theater.data.Zone;
 import org.kata.theater.domain.price.Amount;
 import org.kata.theater.domain.price.Rate;
 import org.kata.theater.domain.reservation.ReservationRequest;
+import org.kata.theater.domain.reservation.ReservationSeat;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -40,8 +41,11 @@ public class TheaterService {
         int remainingSeats = 0;
         int totalSeats = 0;
         boolean foundAllSeats = false;
+
+        // TODO: remove foundSeats and seatsCategory
         List<String> foundSeats = new ArrayList<>();
         Map<String, String> seatsCategory = new HashMap<>();
+        ArrayList<ReservationSeat> reservedSeats = new ArrayList<>();
         for (int i = 0; i < room.getZones().length; i++) {
             Zone zone = room.getZones()[i];
             String zoneCategory = zone.getCategory();
@@ -64,6 +68,7 @@ public class TheaterService {
                                 for (String seat : seatsForRow) {
                                     foundSeats.add(seat);
                                     seatsCategory.put(seat, zoneCategory);
+                                    reservedSeats.add(new ReservationSeat(seat, zoneCategory));
                                 }
                                 foundAllSeats = true;
                                 remainingSeats -= streakOfNotReservedSeats;
@@ -92,9 +97,11 @@ public class TheaterService {
         if (performance.performanceNature.equals("PREMIERE") && remainingSeats < totalSeats * 0.5) {
             // keep 50% seats for VIP
             foundSeats = new ArrayList<>();
+            reservedSeats = new ArrayList<>();
         } else if (performance.performanceNature.equals("PREVIEW") && remainingSeats < totalSeats * 0.9) {
             // keep 10% seats for VIP
             foundSeats = new ArrayList<>();
+            reservedSeats = new ArrayList<>();
         }
 
 
@@ -102,8 +109,8 @@ public class TheaterService {
         // calculate raw price
         Amount rawPrice = Amount.nothing();
         Amount seatBasePrice = new Amount(performancePriceDao.fetchPerformancePrice(performance.id));
-        for (String foundSeat : foundSeats) {
-            Rate categoryRatio = seatsCategory.get(foundSeat).equals("STANDARD") ? Rate.fully() : new Rate("1.5");
+        for (ReservationSeat reservedSeat : reservedSeats) {
+            Rate categoryRatio = reservedSeat.getCategory().equals("STANDARD") ? Rate.fully() : new Rate("1.5");
             rawPrice = rawPrice.add(seatBasePrice.apply(categoryRatio));
         }
 
@@ -121,7 +128,7 @@ public class TheaterService {
         totalBilling = totalBilling.apply(discountRatio);
 
         // TODO : define builder for ReservationRequest
-        return toXml(new ReservationRequest(reservationCategory, performance, reservationId, foundSeats, seatsCategory, totalBilling));
+        return toXml(new ReservationRequest(reservationCategory, performance, reservationId, reservedSeats, totalBilling));
     }
 
     // TODO : move to an exposition layer with something like ReservationTicketPrinter
@@ -137,11 +144,10 @@ public class TheaterService {
         if (reservationRequest.isFulfillable()) {
             sb.append("\t<reservationStatus>FULFILLABLE</reservationStatus>\n");
             sb.append("\t\t<seats>\n");
-            for (String seatReference : reservationRequest.reservedSeats()) {
-                // TODO : model seatReference and seatCategory in a same Seat class
+            for (ReservationSeat reservedSeat : reservationRequest.reservedSeats()) {
                 sb.append("\t\t\t<seat>\n");
-                sb.append("\t\t\t\t<id>").append(seatReference).append("</id>\n");
-                sb.append("\t\t\t\t<category>").append(reservationRequest.seatCategory(seatReference)).append("</category>\n");
+                sb.append("\t\t\t\t<id>").append(reservedSeat.getSeatReference()).append("</id>\n");
+                sb.append("\t\t\t\t<category>").append(reservedSeat.getCategory()).append("</category>\n");
                 sb.append("\t\t\t</seat>\n");
             }
             sb.append("\t\t</seats>\n");
