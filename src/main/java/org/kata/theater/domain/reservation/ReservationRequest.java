@@ -1,5 +1,6 @@
 package org.kata.theater.domain.reservation;
 
+import lombok.Builder;
 import org.kata.theater.data.Performance;
 import org.kata.theater.domain.price.Amount;
 
@@ -7,6 +8,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
+@Builder
 public class ReservationRequest {
     private final String reservationCategory;
     private final Performance performance;
@@ -14,14 +16,6 @@ public class ReservationRequest {
 
     private final List<ReservationSeat> reservedSeats;
     private final Amount totalBilling;
-
-    public ReservationRequest(String reservationCategory, Performance performance, String reservationId, List<ReservationSeat> reservationSeats, Amount totalBilling) {
-        this.reservationCategory = reservationCategory;
-        this.performance = performance;
-        this.reservationId = reservationId;
-        this.reservedSeats = reservationSeats;
-        this.totalBilling = totalBilling;
-    }
 
     public boolean isFulfillable() {
         return !reservedSeats.isEmpty();
