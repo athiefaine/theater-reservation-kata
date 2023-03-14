@@ -29,9 +29,9 @@ public class TheaterService {
     public String reservation(long customerId, int reservationCount, String reservationCategory, Performance performance) {
 
 
-        String res_id = ReservationService.initNewReservation();
+        String reservationId = ReservationService.initNewReservation();
         Reservation reservation = new Reservation();
-        reservation.setReservationId(Long.parseLong(res_id));
+        reservation.setReservationId(Long.parseLong(reservationId));
         reservation.setPerformanceId(performance.id);
 
         TheaterRoom room = theaterRoomDao.fetchTheaterRoom(performance.id);
@@ -120,9 +120,11 @@ public class TheaterService {
         Rate discountRatio = Rate.fully().subtract(discount);
         totalBilling = totalBilling.apply(discountRatio);
 
-        return toXml(new ReservationRequest(reservationCategory, performance, res_id, foundSeats, seatsCategory, totalBilling));
+        // TODO : define builder for ReservationRequest
+        return toXml(new ReservationRequest(reservationCategory, performance, reservationId, foundSeats, seatsCategory, totalBilling));
     }
 
+    // TODO : move to an exposition layer with something like ReservationTicketPrinter
     private static String toXml(ReservationRequest reservationRequest) {
         StringBuilder sb = new StringBuilder();
         sb.append("<reservation>\n");
