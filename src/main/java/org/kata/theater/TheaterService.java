@@ -126,7 +126,14 @@ public class TheaterService {
         totalBilling = totalBilling.apply(discountRatio);
 
         // TODO : define builder for ReservationRequest
-        return toXml(new ReservationRequest(reservationCategory, performance, reservationId, reservedSeats, totalBilling));
+        ReservationRequest reservationRequest = ReservationRequest.builder()
+                .reservationId(reservationId)
+                .performance(performance)
+                .reservationCategory(reservationCategory)
+                .reservedSeats(reservedSeats)
+                .totalBilling(totalBilling)
+                .build();
+        return toXml(reservationRequest);
     }
 
     // TODO : move to an exposition layer with something like ReservationTicketPrinter
