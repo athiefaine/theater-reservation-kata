@@ -10,6 +10,7 @@ import org.kata.theater.data.Row;
 import org.kata.theater.data.Seat;
 import org.kata.theater.data.TheaterRoom;
 import org.kata.theater.data.Zone;
+import org.kata.theater.domain.allocation.AllocationQuotaRepository;
 import org.kata.theater.domain.allocation.AllocationQuotaSpecification;
 import org.kata.theater.domain.allocation.PerformanceInventory;
 import org.kata.theater.domain.price.Amount;
@@ -25,6 +26,12 @@ import java.util.stream.Collectors;
 public class TheaterService {
     private final TheaterRoomDao theaterRoomDao = new TheaterRoomDao();
     private final PerformancePriceDao performancePriceDao = new PerformancePriceDao();
+
+    private final AllocationQuotaRepository allocationQuotaRepository;
+
+    public TheaterService(AllocationQuotaRepository allocationQuotaRepository) {
+        this.allocationQuotaRepository = allocationQuotaRepository;
+    }
 
     public ReservationRequest reservation(long customerId, int reservationCount, String reservationCategory, Performance performance) {
         // Data fetching starts here
