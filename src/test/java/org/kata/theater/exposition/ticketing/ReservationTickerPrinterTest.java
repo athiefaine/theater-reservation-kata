@@ -1,7 +1,6 @@
 package org.kata.theater.exposition.ticketing;
 
 import org.approvaltests.Approvals;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.kata.theater.ReservationService;
@@ -11,6 +10,8 @@ import org.kata.theater.data.Performance;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class ReservationTickerPrinterTest {
 
@@ -35,8 +36,8 @@ class ReservationTickerPrinterTest {
                 performance);
         Approvals.verify(reservation);
 
-        // TODO : add testing for reserved seat references
-        Assertions.assertThat(ReservationService.findReservation(123460)).isNotNull();
+        assertThat(ReservationService.findReservation(123460).getSeats())
+                .containsExactly("B3", "B4", "B5", "B6");
 
     }
 
@@ -51,7 +52,9 @@ class ReservationTickerPrinterTest {
                 performance);
         Approvals.verify(reservation);
 
-        Assertions.assertThat(ReservationService.findReservation(123459)).isNotNull();
+        assertThat(ReservationService.findReservation(123459).getSeats())
+                .containsExactly("I3", "I4", "I5", "I6");
+
     }
 
     @Test
@@ -66,7 +69,9 @@ class ReservationTickerPrinterTest {
                 performance);
         Approvals.verify(reservation);
 
-        Assertions.assertThat(ReservationService.findReservation(123457)).isNotNull();
+        assertThat(ReservationService.findReservation(123457).getSeats())
+                .containsExactly("B1", "B2", "B3", "B4");
+
     }
 
     @Test
@@ -82,7 +87,9 @@ class ReservationTickerPrinterTest {
                 performance);
         Approvals.verify(reservation2);
 
-        Assertions.assertThat(ReservationService.findReservation(123461)).isNotNull();
+        assertThat(ReservationService.findReservation(123461).getSeats())
+                .containsExactly("B3", "B4", "B5", "B6");
+
     }
 
     @Test
@@ -97,7 +104,9 @@ class ReservationTickerPrinterTest {
                 performance);
         Approvals.verify(reservation);
 
-        Assertions.assertThat(ReservationService.findReservation(123458)).isNotNull();
+        assertThat(ReservationService.findReservation(123458).getSeats())
+                .containsExactly("B3", "B4", "B5", "B6");
+
     }
 
     @Test
@@ -112,7 +121,9 @@ class ReservationTickerPrinterTest {
                 performance);
         Approvals.verify(reservation);
 
-        Assertions.assertThat(ReservationService.findReservation(123456)).isNotNull();
+        assertThat(ReservationService.findReservation(123456).getSeats())
+                .containsExactly("R2-3", "R2-4", "R2-5", "R2-6");
+
     }
 
 }
