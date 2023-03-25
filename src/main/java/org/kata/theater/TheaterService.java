@@ -10,6 +10,7 @@ import org.kata.theater.data.Row;
 import org.kata.theater.data.Seat;
 import org.kata.theater.data.TheaterRoom;
 import org.kata.theater.data.Zone;
+import org.kata.theater.domain.allocation.AllocationQuotaPredicate;
 import org.kata.theater.domain.price.Amount;
 import org.kata.theater.domain.price.Rate;
 import org.kata.theater.domain.reservation.ReservationRequest;
@@ -30,6 +31,7 @@ public class TheaterService {
         String reservationId = ReservationService.initNewReservation();
         TheaterRoom room = theaterRoomDao.fetchTheaterRoom(performance.id);
         BigDecimal performancePrice = performancePriceDao.fetchPerformancePrice(performance.id);
+        double allocationQuota = getAllocationQuota(performance);
         CustomerSubscriptionDao customerSubscriptionDao = new CustomerSubscriptionDao();
         boolean isSubscribed = customerSubscriptionDao.fetchCustomerSubscription(customerId);
         BigDecimal voucherProgramDiscount = VoucherProgramDao.fetchVoucherProgram(LocalDate.now());
@@ -78,8 +80,12 @@ public class TheaterService {
                 }
             }
         }
-
-        if (remainingSeats < totalSeats * getVipQuota(performance)) {
+        AllocationQuotaPredicate allocationQuotaPredicate = AllocationQuotaPredicate.builder()
+                .totalSeatsCount(totalSeats)
+                .availableSeatsCount(remainingSeats)
+                .shelvingQuota(allocationQuota)
+                .build();
+        if (!allocationQuotaPredicate.canReserve()) {
             reservedSeats = new ArrayList<>();
         }
 
@@ -131,7 +137,7 @@ public class TheaterService {
                 .build();
     }
 
-    private static double getVipQuota(Performance performance) {
+    private static double getAllocationQuota(Performance performance) {
         double vipQuota;
         switch (performance.performanceNature) {
             case "PREMIERE":
