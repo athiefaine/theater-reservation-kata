@@ -71,24 +71,11 @@ public class TheaterService {
                     // TODO :introduce repository that takes a domain object that contains reservedSeats
                     // TODO : shouldn't be it saved at the end of the method ?
                     theaterRoomDao.saveSeats(performance.id, reservedSeats.stream()
-                                    .map(ReservationSeat::getSeatReference)
+                            .map(ReservationSeat::getSeatReference)
                             .collect(Collectors.toList()), "BOOKING_PENDING");
                 }
             }
         }
-        reservation.setSeats(reservedSeats.stream()
-                .map(ReservationSeat::getSeatReference)
-                .toArray(String[]::new));
-
-        if (!reservedSeats.isEmpty()) {
-            reservation.setStatus("PENDING");
-        } else {
-            reservation.setStatus("ABORTED");
-        }
-
-        // TODO : introduce a DAO that saves a ReservationRequest in front of ReservationRequest
-        // TODO : shouldn't be it saved at the end of the method ?
-        ReservationService.updateReservation(reservation);
 
         if (performance.performanceNature.equals("PREMIERE") && remainingSeats < totalSeats * 0.5) {
             // keep 50% seats for VIP
@@ -97,6 +84,14 @@ public class TheaterService {
             // keep 10% seats for VIP
             reservedSeats = new ArrayList<>();
         }
+
+        reservation.setSeats(reservedSeats.stream()
+                .map(ReservationSeat::getSeatReference)
+                .toArray(String[]::new));
+
+        // TODO : introduce a DAO that saves a ReservationRequest in front of ReservationRequest
+        // TODO : shouldn't be it saved at the end of the method ?
+        ReservationService.updateReservation(reservation);
 
 
         // calculate raw price
@@ -128,7 +123,6 @@ public class TheaterService {
                 .totalBilling(totalBilling)
                 .build();
     }
-
 
 
     public void cancelReservation(String reservationId, Long performanceId, List<String> seats) {

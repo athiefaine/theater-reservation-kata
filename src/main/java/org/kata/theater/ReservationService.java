@@ -22,7 +22,6 @@ public class ReservationService {
 
     public static void cancelReservation(long reservationId) {
         Reservation reservation = new ReservationDao().find(reservationId);
-        reservation.setStatus("CANCELLED");
         reservation.setSeats(new String[0]);
         new ReservationDao().update(reservation);
     }
