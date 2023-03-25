@@ -10,6 +10,7 @@ import org.kata.theater.data.Row;
 import org.kata.theater.data.Seat;
 import org.kata.theater.data.TheaterRoom;
 import org.kata.theater.data.Zone;
+import org.kata.theater.domain.allocation.AllocationQuotaSpecification;
 import org.kata.theater.domain.allocation.PerformanceNature;
 import org.kata.theater.domain.allocation.AllocationQuotas;
 import org.kata.theater.domain.allocation.AllocationQuotaPredicate;
