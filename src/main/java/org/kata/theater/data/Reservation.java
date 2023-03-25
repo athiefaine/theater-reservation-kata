@@ -8,9 +8,11 @@ public class Reservation {
 
     private Long performanceId;
 
-    private String status;
-
     private String[] seats;
+
+    public String getStatus() {
+        return getSeats().length > 0 ? "PENDING" : "ABORTED";
+    }
 
     public Long getReservationId() {
         return reservationId;
@@ -28,14 +30,6 @@ public class Reservation {
         this.performanceId = performanceId;
     }
 
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
     public String[] getSeats() {
         return seats;
     }
@@ -48,7 +42,7 @@ public class Reservation {
     public String toString() {
         return "Reservation{" +
                 "reservationId=" + reservationId +
-                ", status='" + status + '\'' +
+                ", status='" + getStatus() + '\'' +
                 ", seats=" + Arrays.toString(seats) +
                 '}';
     }

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.kata.theater.ReservationService;
 import org.kata.theater.TheaterService;
 import org.kata.theater.data.Performance;
+import org.kata.theater.data.Reservation;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -104,8 +105,9 @@ class ReservationTickerPrinterTest {
                 performance);
         Approvals.verify(reservation);
 
-        assertThat(ReservationService.findReservation(123458).getSeats())
-                .containsExactly("B3", "B4", "B5", "B6");
+        Reservation savedReservation = ReservationService.findReservation(123458);
+        assertThat(savedReservation.getSeats()).isEmpty();
+        assertThat(savedReservation.getStatus()).isEqualTo("ABORTED");
 
     }
 
@@ -121,8 +123,9 @@ class ReservationTickerPrinterTest {
                 performance);
         Approvals.verify(reservation);
 
-        assertThat(ReservationService.findReservation(123456).getSeats())
-                .containsExactly("R2-3", "R2-4", "R2-5", "R2-6");
+        Reservation savedReservation = ReservationService.findReservation(123456);
+        assertThat(savedReservation.getSeats()).isEmpty();
+        assertThat(savedReservation.getStatus()).isEqualTo("ABORTED");
 
     }
 
