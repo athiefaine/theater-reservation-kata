@@ -15,6 +15,7 @@ import org.kata.theater.domain.price.Rate;
 import org.kata.theater.domain.reservation.ReservationRequest;
 import org.kata.theater.domain.reservation.ReservationSeat;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,12 +26,19 @@ public class TheaterService {
     private final PerformancePriceDao performancePriceDao = new PerformancePriceDao();
 
     public ReservationRequest reservation(long customerId, int reservationCount, String reservationCategory, Performance performance) {
+        // Data fetching starts here
         String reservationId = ReservationService.initNewReservation();
+        TheaterRoom room = theaterRoomDao.fetchTheaterRoom(performance.id);
+        BigDecimal performancePrice = performancePriceDao.fetchPerformancePrice(performance.id);
+        CustomerSubscriptionDao customerSubscriptionDao = new CustomerSubscriptionDao();
+        boolean isSubscribed = customerSubscriptionDao.fetchCustomerSubscription(customerId);
+        BigDecimal voucherProgramDiscount = VoucherProgramDao.fetchVoucherProgram(LocalDate.now());
+        // Data fetching ends here
+
         Reservation reservation = new Reservation();
         reservation.setReservationId(Long.parseLong(reservationId));
         reservation.setPerformanceId(performance.id);
 
-        TheaterRoom room = theaterRoomDao.fetchTheaterRoom(performance.id);
 
         // find "reservationCount" first contiguous seats in any row
         int remainingSeats = 0;
@@ -79,7 +87,6 @@ public class TheaterService {
             reservedSeats = new ArrayList<>();
         }
 
-
         reservation.setSeats(reservedSeats.stream()
                 .map(ReservationSeat::getSeatReference)
                 .toArray(String[]::new));
@@ -88,7 +95,7 @@ public class TheaterService {
 
         // calculate raw price
         Amount rawPrice = Amount.nothing();
-        Amount seatBasePrice = new Amount(performancePriceDao.fetchPerformancePrice(performance.id));
+        Amount seatBasePrice = new Amount(performancePrice);
         for (ReservationSeat reservedSeat : reservedSeats) {
             Rate categoryRatio = reservedSeat.getCategory().equals("STANDARD") ? Rate.fully() : new Rate("1.5");
             rawPrice = rawPrice.add(seatBasePrice.apply(categoryRatio));
@@ -96,17 +103,16 @@ public class TheaterService {
 
         // check and apply discounts and fidelity program
 
-        CustomerSubscriptionDao customerSubscriptionDao = new CustomerSubscriptionDao();
-        boolean isSubscribed = customerSubscriptionDao.fetchCustomerSubscription(customerId);
         Amount totalBilling = new Amount(rawPrice);
         if (isSubscribed) {
             totalBilling = totalBilling.apply(Rate.discountPercent("17.5"));
         }
 
-        Rate discount = new Rate(VoucherProgramDao.fetchVoucherProgram(LocalDate.now())); // nasty dependency of course
+        Rate discount = new Rate(voucherProgramDiscount); // nasty dependency of course
         Rate discountRatio = Rate.fully().subtract(discount);
         totalBilling = totalBilling.apply(discountRatio);
 
+        // Data updates start here
         if (foundAllSeats) {
             // TODO :introduce repository that takes a domain object that contains reservedSeats
             // TODO : shouldn't be it saved at the end of the method ?
@@ -117,6 +123,7 @@ public class TheaterService {
         // TODO : introduce a DAO that saves a ReservationRequest in front of ReservationRequest
         // TODO : shouldn't be it saved at the end of the method ?
         ReservationService.updateReservation(reservation);
+        // Data updates end here
 
         return ReservationRequest.builder()
                 .reservationId(reservationId)
