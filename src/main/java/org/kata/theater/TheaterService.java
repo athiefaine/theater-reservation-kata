@@ -67,13 +67,6 @@ public class TheaterService {
                         streakOfNotReservedSeats = 0;
                     }
                 }
-                if (foundAllSeats) {
-                    // TODO :introduce repository that takes a domain object that contains reservedSeats
-                    // TODO : shouldn't be it saved at the end of the method ?
-                    theaterRoomDao.saveSeats(performance.id, reservedSeats.stream()
-                            .map(ReservationSeat::getSeatReference)
-                            .collect(Collectors.toList()), "BOOKING_PENDING");
-                }
             }
         }
 
@@ -85,13 +78,11 @@ public class TheaterService {
             reservedSeats = new ArrayList<>();
         }
 
+
         reservation.setSeats(reservedSeats.stream()
                 .map(ReservationSeat::getSeatReference)
                 .toArray(String[]::new));
 
-        // TODO : introduce a DAO that saves a ReservationRequest in front of ReservationRequest
-        // TODO : shouldn't be it saved at the end of the method ?
-        ReservationService.updateReservation(reservation);
 
 
         // calculate raw price
@@ -114,6 +105,17 @@ public class TheaterService {
         Rate discount = new Rate(VoucherProgramDao.fetchVoucherProgram(performance.startTime.toLocalDate()));
         Rate discountRatio = Rate.fully().subtract(discount);
         totalBilling = totalBilling.apply(discountRatio);
+
+        if (foundAllSeats) {
+            // TODO :introduce repository that takes a domain object that contains reservedSeats
+            // TODO : shouldn't be it saved at the end of the method ?
+            theaterRoomDao.saveSeats(performance.id, reservedSeats.stream()
+                    .map(ReservationSeat::getSeatReference)
+                    .collect(Collectors.toList()), "BOOKING_PENDING");
+        }
+        // TODO : introduce a DAO that saves a ReservationRequest in front of ReservationRequest
+        // TODO : shouldn't be it saved at the end of the method ?
+        ReservationService.updateReservation(reservation);
 
         return ReservationRequest.builder()
                 .reservationId(reservationId)
