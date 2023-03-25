@@ -2,7 +2,10 @@ package org.kata.theater.exposition.ticketing;
 
 import org.approvaltests.Approvals;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.kata.theater.ReservationService;
 import org.kata.theater.TheaterService;
 import org.kata.theater.data.Performance;
@@ -14,6 +17,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ReservationTickerPrinterTest {
 
     private ReservationTickerPrinter reservationTickerPrinter;
@@ -27,6 +31,7 @@ class ReservationTickerPrinterTest {
     }
 
     @Test
+    @Order(5)
     void reserve_once_on_premiere_performance() {
         Performance performance = new Performance();
         performance.id = 1L;
@@ -43,6 +48,7 @@ class ReservationTickerPrinterTest {
     }
 
     @Test
+    @Order(4)
     void reserve_once_on_premiere_performance_with_premium_category() {
         Performance performance = new Performance();
         performance.id = 1L;
@@ -59,6 +65,7 @@ class ReservationTickerPrinterTest {
     }
 
     @Test
+    @Order(2)
     void cancel_then_reserve_on_premiere_performance_with_standard_category() {
         theaterService.cancelReservation("123456", 1L, List.of("B2"));
         Performance performance = new Performance();
@@ -76,6 +83,7 @@ class ReservationTickerPrinterTest {
     }
 
     @Test
+    @Order(6)
     void reserve_twice_on_premiere_performance() {
         Performance performance = new Performance();
         performance.id = 1L;
@@ -94,6 +102,7 @@ class ReservationTickerPrinterTest {
     }
 
     @Test
+    @Order(3)
     void reservation_failed_on_preview_performance() {
         Performance performance = new Performance();
         performance.id = 2L;
@@ -112,6 +121,7 @@ class ReservationTickerPrinterTest {
     }
 
     @Test
+    @Order(1)
     void reservation_failed_on_premiere_performance() {
         Performance performance = new Performance();
         performance.id = 3L;
@@ -126,6 +136,23 @@ class ReservationTickerPrinterTest {
         Reservation savedReservation = ReservationService.findReservation(123456);
         assertThat(savedReservation.getSeats()).isEmpty();
         assertThat(savedReservation.getStatus()).isEqualTo("ABORTED");
+
+    }
+
+    @Test
+    @Order(7)
+    void reserve_once_on_derniere_performance_with_premium_category() {
+        Performance performance = new Performance();
+        performance.id = 1L;
+        performance.play = "The CICD by Corneille";
+        performance.startTime = LocalDate.of(2023, Month.APRIL, 22).atTime(21, 0);
+        performance.performanceNature = "DERNIERE";
+        String reservation = reservationTickerPrinter.printReservation(1L, 4, "PREMIUM",
+                performance);
+        Approvals.verify(reservation);
+
+        assertThat(ReservationService.findReservation(123463).getSeats())
+                .containsExactly("I3", "I4", "I5", "I6");
 
     }
 
