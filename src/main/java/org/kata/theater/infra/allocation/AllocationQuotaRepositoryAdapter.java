@@ -1,18 +1,26 @@
 package org.kata.theater.infra.allocation;
 
-import org.kata.theater.domain.allocation.AllocationQuotaCriteria;
+import org.kata.theater.domain.allocation.PerformanceNature;
 import org.kata.theater.domain.allocation.AllocationQuotaRepository;
+import org.kata.theater.domain.allocation.AllocationQuotaSpecification;
 
 public class AllocationQuotaRepositoryAdapter implements AllocationQuotaRepository {
     @Override
-    public double allocationQuota(AllocationQuotaCriteria criteria) {
-        switch (criteria.getPerformanceNature()) {
+    public AllocationQuotaSpecification allocationQuota(PerformanceNature criteria) {
+        double result;
+        switch (criteria.getValue()) {
             case "PREMIERE":
-                return 0.5;
+                result = 0.5;
+                break;
             case "PREVIEW":
-                return 0.9;
+
+                result = 0.9;
+                break;
             default:
-                return -1;
+                result = -1;
+                break;
         }
+        return new AllocationQuotaSpecification(result);
     }
+
 }
