@@ -42,7 +42,7 @@ public class TheaterService {
         TheaterRoom room = theaterRoomDao.fetchTheaterRoom(performance.id);
         BigDecimal performancePrice = performancePriceDao.fetchPerformancePrice(performance.id);
         PerformanceNature performanceNature = new PerformanceNature(performance.performanceNature);
-        AllocationQuotaSpecification allocationQuota = allocationQuotas.allocationQuota(performanceNature);
+        AllocationQuotaSpecification allocationQuota = allocationQuotas.find(performanceNature);
         CustomerSubscriptionDao customerSubscriptionDao = new CustomerSubscriptionDao();
         boolean isSubscribed = customerSubscriptionDao.fetchCustomerSubscription(customerId);
         BigDecimal voucherProgramDiscount = VoucherProgramDao.fetchVoucherProgram(LocalDate.now());
