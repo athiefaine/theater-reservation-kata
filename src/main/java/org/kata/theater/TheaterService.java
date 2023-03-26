@@ -10,7 +10,8 @@ import org.kata.theater.data.Row;
 import org.kata.theater.data.Seat;
 import org.kata.theater.data.TheaterRoom;
 import org.kata.theater.data.Zone;
-import org.kata.theater.domain.allocation.AllocationQuotaPredicate;
+import org.kata.theater.domain.allocation.AllocationQuotaSpecification;
+import org.kata.theater.domain.allocation.PerformanceInventory;
 import org.kata.theater.domain.price.Amount;
 import org.kata.theater.domain.price.Rate;
 import org.kata.theater.domain.reservation.ReservationRequest;
@@ -80,21 +81,21 @@ public class TheaterService {
                 }
             }
         }
-        AllocationQuotaPredicate allocationQuotaPredicate = AllocationQuotaPredicate.builder()
+
+        PerformanceInventory performanceInventory =
+                PerformanceInventory.builder()
                 .totalSeatsCount(totalSeats)
                 .availableSeatsCount(remainingSeats)
-                .shelvingQuota(allocationQuota)
                 .build();
-        if (!allocationQuotaPredicate.canReserve()) {
+        AllocationQuotaSpecification allocationQuotaSpecification =
+                new AllocationQuotaSpecification(allocationQuota);
+        if (!allocationQuotaSpecification.isSatisfiedBy(performanceInventory)) {
             reservedSeats = new ArrayList<>();
         }
-
 
         reservation.setSeats(reservedSeats.stream()
                 .map(ReservationSeat::getSeatReference)
                 .toArray(String[]::new));
-
-
 
         // calculate raw price
         Amount rawPrice = Amount.nothing();
