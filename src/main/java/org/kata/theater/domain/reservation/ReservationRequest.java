@@ -1,36 +1,38 @@
 package org.kata.theater.domain.reservation;
 
 import lombok.Builder;
-import org.kata.theater.data.Performance;
+import lombok.Value;
 import org.kata.theater.domain.price.Amount;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
+@Value
 @Builder
 public class ReservationRequest {
-    private final String reservationCategory;
-    private final Performance performance;
-    private final String reservationId;
+    String reservationCategory;
 
-    private final List<ReservationSeat> reservedSeats;
-    private final Amount totalBilling;
+    TheaterSession theaterSession;
+    String reservationId;
+
+    List<ReservationSeat> reservedSeats;
+    Amount totalBilling;
 
     public boolean isFulfillable() {
         return !reservedSeats.isEmpty();
     }
 
     public String performanceTitle() {
-        return getPerformance().play;
+        return theaterSession.getTitle();
     }
 
     public LocalDate date() {
-        return getPerformance().startTime.toLocalDate();
+        return theaterSession.getStartDateTime().toLocalDate();
     }
 
     public LocalTime time() {
-        return getPerformance().startTime.toLocalTime();
+        return theaterSession.getStartDateTime().toLocalTime();
     }
 
     public String reservationCategory() {
@@ -41,9 +43,6 @@ public class ReservationRequest {
         return reservedSeats;
     }
 
-    public Performance getPerformance() {
-        return performance;
-    }
 
     public String reservationId() {
         return reservationId;

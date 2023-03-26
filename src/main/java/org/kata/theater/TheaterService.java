@@ -10,6 +10,7 @@ import org.kata.theater.data.Row;
 import org.kata.theater.data.Seat;
 import org.kata.theater.data.TheaterRoom;
 import org.kata.theater.data.Zone;
+import org.kata.theater.domain.allocation.PerformanceNature;
 import org.kata.theater.domain.allocation.AllocationQuotaRepository;
 import org.kata.theater.domain.allocation.AllocationQuotaSpecification;
 import org.kata.theater.domain.allocation.PerformanceInventory;
@@ -17,6 +18,7 @@ import org.kata.theater.domain.price.Amount;
 import org.kata.theater.domain.price.Rate;
 import org.kata.theater.domain.reservation.ReservationRequest;
 import org.kata.theater.domain.reservation.ReservationSeat;
+import org.kata.theater.domain.reservation.TheaterSession;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -38,7 +40,8 @@ public class TheaterService {
         String reservationId = ReservationService.initNewReservation();
         TheaterRoom room = theaterRoomDao.fetchTheaterRoom(performance.id);
         BigDecimal performancePrice = performancePriceDao.fetchPerformancePrice(performance.id);
-        AllocationQuotaSpecification allocationQuota = getAllocationQuota(performance);
+        PerformanceNature performanceNature = new PerformanceNature(performance.performanceNature);
+        AllocationQuotaSpecification allocationQuota = allocationQuotaRepository.allocationQuota(performanceNature);
         CustomerSubscriptionDao customerSubscriptionDao = new CustomerSubscriptionDao();
         boolean isSubscribed = customerSubscriptionDao.fetchCustomerSubscription(customerId);
         BigDecimal voucherProgramDiscount = VoucherProgramDao.fetchVoucherProgram(performance.startTime.toLocalDate());
@@ -133,30 +136,19 @@ public class TheaterService {
         ReservationService.updateReservation(reservation);
         // Data updates end here
 
+        TheaterSession theaterSession = TheaterSession.builder()
+                .title(performance.play)
+                .startDateTime(performance.startTime)
+                .endDateTime(performance.endTime)
+                .build();
         return ReservationRequest.builder()
                 .reservationId(reservationId)
-                .performance(performance)
+                .theaterSession(theaterSession)
                 .reservationCategory(reservationCategory)
                 .reservedSeats(reservedSeats)
                 .totalBilling(totalBilling)
                 .build();
     }
-
-    private static AllocationQuotaSpecification getAllocationQuota(Performance performance) {
-        double vipQuota;
-        switch (performance.performanceNature) {
-            case "PREMIERE":
-                vipQuota = 0.5;
-                break;
-            case "PREVIEW":
-                vipQuota = 0.9;
-                break;
-            default:
-                vipQuota = -1;
-        }
-        return new AllocationQuotaSpecification(vipQuota);
-    }
-
 
     public void cancelReservation(String reservationId, Long performanceId, List<String> seats) {
         TheaterRoom theaterRoom = theaterRoomDao.fetchTheaterRoom(performanceId);
