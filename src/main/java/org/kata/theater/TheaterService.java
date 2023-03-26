@@ -32,7 +32,7 @@ public class TheaterService {
         String reservationId = ReservationService.initNewReservation();
         TheaterRoom room = theaterRoomDao.fetchTheaterRoom(performance.id);
         BigDecimal performancePrice = performancePriceDao.fetchPerformancePrice(performance.id);
-        double allocationQuota = getAllocationQuota(performance);
+        AllocationQuotaSpecification allocationQuota = getAllocationQuota(performance);
         CustomerSubscriptionDao customerSubscriptionDao = new CustomerSubscriptionDao();
         boolean isSubscribed = customerSubscriptionDao.fetchCustomerSubscription(customerId);
         BigDecimal voucherProgramDiscount = VoucherProgramDao.fetchVoucherProgram(LocalDate.now());
@@ -87,9 +87,7 @@ public class TheaterService {
                 .totalSeatsCount(totalSeats)
                 .availableSeatsCount(remainingSeats)
                 .build();
-        AllocationQuotaSpecification allocationQuotaSpecification =
-                new AllocationQuotaSpecification(allocationQuota);
-        if (!allocationQuotaSpecification.isSatisfiedBy(performanceInventory)) {
+        if (!allocationQuota.isSatisfiedBy(performanceInventory)) {
             reservedSeats = new ArrayList<>();
         }
 
@@ -138,7 +136,7 @@ public class TheaterService {
                 .build();
     }
 
-    private static double getAllocationQuota(Performance performance) {
+    private static AllocationQuotaSpecification getAllocationQuota(Performance performance) {
         double vipQuota;
         switch (performance.performanceNature) {
             case "PREMIERE":
@@ -150,7 +148,7 @@ public class TheaterService {
             default:
                 vipQuota = -1;
         }
-        return vipQuota;
+        return new AllocationQuotaSpecification(vipQuota);
     }
 
 
