@@ -10,8 +10,8 @@ import org.kata.theater.ReservationService;
 import org.kata.theater.TheaterService;
 import org.kata.theater.data.Performance;
 import org.kata.theater.data.Reservation;
-import org.kata.theater.domain.allocation.AllocationQuotaRepository;
-import org.kata.theater.infra.allocation.AllocationQuotaRepositoryAdapter;
+import org.kata.theater.domain.allocation.AllocationQuotas;
+import org.kata.theater.infra.allocation.AllocationQuotasAdapter;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -24,13 +24,13 @@ class ReservationTickerPrinterTest {
 
     private ReservationTickerPrinter reservationTickerPrinter;
     private TheaterService theaterService;
-    private AllocationQuotaRepository allocationQuotaRepository;
+    private AllocationQuotas allocationQuotas;
 
 
     @BeforeEach
     void setUp() {
-        allocationQuotaRepository = new AllocationQuotaRepositoryAdapter();
-        theaterService = new TheaterService(allocationQuotaRepository);
+        allocationQuotas = new AllocationQuotasAdapter();
+        theaterService = new TheaterService(allocationQuotas);
         reservationTickerPrinter = new ReservationTickerPrinter(theaterService);
     }
 
