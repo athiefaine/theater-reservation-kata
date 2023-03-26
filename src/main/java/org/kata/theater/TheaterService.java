@@ -11,7 +11,7 @@ import org.kata.theater.data.Seat;
 import org.kata.theater.data.TheaterRoom;
 import org.kata.theater.data.Zone;
 import org.kata.theater.domain.allocation.PerformanceNature;
-import org.kata.theater.domain.allocation.AllocationQuotaRepository;
+import org.kata.theater.domain.allocation.AllocationQuotas;
 import org.kata.theater.domain.allocation.AllocationQuotaSpecification;
 import org.kata.theater.domain.allocation.PerformanceInventory;
 import org.kata.theater.domain.price.Amount;
@@ -29,10 +29,10 @@ public class TheaterService {
     private final TheaterRoomDao theaterRoomDao = new TheaterRoomDao();
     private final PerformancePriceDao performancePriceDao = new PerformancePriceDao();
 
-    private final AllocationQuotaRepository allocationQuotaRepository;
+    private final AllocationQuotas allocationQuotas;
 
-    public TheaterService(AllocationQuotaRepository allocationQuotaRepository) {
-        this.allocationQuotaRepository = allocationQuotaRepository;
+    public TheaterService(AllocationQuotas allocationQuotas) {
+        this.allocationQuotas = allocationQuotas;
     }
 
     public ReservationRequest reservation(long customerId, int reservationCount, String reservationCategory, Performance performance) {
@@ -41,7 +41,7 @@ public class TheaterService {
         TheaterRoom room = theaterRoomDao.fetchTheaterRoom(performance.id);
         BigDecimal performancePrice = performancePriceDao.fetchPerformancePrice(performance.id);
         PerformanceNature performanceNature = new PerformanceNature(performance.performanceNature);
-        AllocationQuotaSpecification allocationQuota = allocationQuotaRepository.allocationQuota(performanceNature);
+        AllocationQuotaSpecification allocationQuota = allocationQuotas.allocationQuota(performanceNature);
         CustomerSubscriptionDao customerSubscriptionDao = new CustomerSubscriptionDao();
         boolean isSubscribed = customerSubscriptionDao.fetchCustomerSubscription(customerId);
         BigDecimal voucherProgramDiscount = VoucherProgramDao.fetchVoucherProgram(performance.startTime.toLocalDate());

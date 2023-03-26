@@ -1,10 +1,10 @@
 package org.kata.theater.infra.allocation;
 
 import org.kata.theater.domain.allocation.PerformanceNature;
-import org.kata.theater.domain.allocation.AllocationQuotaRepository;
+import org.kata.theater.domain.allocation.AllocationQuotas;
 import org.kata.theater.domain.allocation.AllocationQuotaSpecification;
 
-public class AllocationQuotaRepositoryAdapter implements AllocationQuotaRepository {
+public class AllocationQuotasAdapter implements AllocationQuotas {
     @Override
     public AllocationQuotaSpecification allocationQuota(PerformanceNature criteria) {
         double result;
