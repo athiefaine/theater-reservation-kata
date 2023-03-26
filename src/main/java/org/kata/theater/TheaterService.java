@@ -53,11 +53,59 @@ public class TheaterService {
         reservation.setPerformanceId(performance.id);
 
 
+        List<ReservationSeat> reservedSeats = allocateSeats(reservationCount, reservationCategory, room, allocationQuota);
+
+        reservation.setSeats(reservedSeats.stream()
+                .map(ReservationSeat::getSeatReference)
+                .toArray(String[]::new));
+
+        // calculate raw price
+        Amount rawPrice = Amount.nothing();
+        Amount seatBasePrice = new Amount(performancePrice);
+        for (ReservationSeat reservedSeat : reservedSeats) {
+            Rate categoryRatio = reservedSeat.getCategory().equals("STANDARD") ? Rate.fully() : new Rate("1.5");
+            rawPrice = rawPrice.add(seatBasePrice.apply(categoryRatio));
+        }
+
+        // check and apply discounts and fidelity program
+
+        Amount totalBilling = new Amount(rawPrice);
+        if (isSubscribed) {
+            totalBilling = totalBilling.apply(Rate.discountPercent("17.5"));
+        }
+
+        Rate discount = new Rate(voucherProgramDiscount); // nasty dependency of course
+        Rate discountRatio = Rate.fully().subtract(discount);
+        totalBilling = totalBilling.apply(discountRatio);
+
+        // Data updates start here
+        if (!reservedSeats.isEmpty()) {
+            // TODO :introduce repository that takes a domain object that contains reservedSeats
+            // TODO : shouldn't be it saved at the end of the method ?
+            theaterRoomDao.saveSeats(performance.id, reservedSeats.stream()
+                    .map(ReservationSeat::getSeatReference)
+                    .collect(Collectors.toList()), "BOOKING_PENDING");
+        }
+        // TODO : introduce a DAO that saves a ReservationRequest in front of ReservationRequest
+        // TODO : shouldn't be it saved at the end of the method ?
+        ReservationService.updateReservation(reservation);
+        // Data updates end here
+
+        return ReservationRequest.builder()
+                .reservationId(reservationId)
+                .performance(performance)
+                .reservationCategory(reservationCategory)
+                .reservedSeats(reservedSeats)
+                .totalBilling(totalBilling)
+                .build();
+    }
+
+    private static List<ReservationSeat> allocateSeats(int reservationCount, String reservationCategory, TheaterRoom room, double allocationQuota) {
         // find "reservationCount" first contiguous seats in any row
         int remainingSeats = 0;
         int totalSeats = 0;
         boolean foundAllSeats = false;
-        ArrayList<ReservationSeat> reservedSeats = new ArrayList<>();
+        List<ReservationSeat> reservedSeats = new ArrayList<>();
         for (int i = 0; i < room.getZones().length; i++) {
             Zone zone = room.getZones()[i];
             String zoneCategory = zone.getCategory();
@@ -100,55 +148,7 @@ public class TheaterService {
         if (!allocationQuota.isSatisfiedBy(performanceInventory)) {
             reservedSeats = new ArrayList<>();
         }
-
-        reservation.setSeats(reservedSeats.stream()
-                .map(ReservationSeat::getSeatReference)
-                .toArray(String[]::new));
-
-        // calculate raw price
-        Amount rawPrice = Amount.nothing();
-        Amount seatBasePrice = new Amount(performancePrice);
-        for (ReservationSeat reservedSeat : reservedSeats) {
-            Rate categoryRatio = reservedSeat.getCategory().equals("STANDARD") ? Rate.fully() : new Rate("1.5");
-            rawPrice = rawPrice.add(seatBasePrice.apply(categoryRatio));
-        }
-
-        // check and apply discounts and fidelity program
-
-        Amount totalBilling = new Amount(rawPrice);
-        if (isSubscribed) {
-            totalBilling = totalBilling.apply(Rate.discountPercent("17.5"));
-        }
-
-        Rate discount = new Rate(voucherProgramDiscount); // nasty dependency of course
-        Rate discountRatio = Rate.fully().subtract(discount);
-        totalBilling = totalBilling.apply(discountRatio);
-
-        // Data updates start here
-        if (foundAllSeats) {
-            // TODO :introduce repository that takes a domain object that contains reservedSeats
-            // TODO : shouldn't be it saved at the end of the method ?
-            theaterRoomDao.saveSeats(performance.id, reservedSeats.stream()
-                    .map(ReservationSeat::getSeatReference)
-                    .collect(Collectors.toList()), "BOOKING_PENDING");
-        }
-        // TODO : introduce a DAO that saves a ReservationRequest in front of ReservationRequest
-        // TODO : shouldn't be it saved at the end of the method ?
-        ReservationService.updateReservation(reservation);
-        // Data updates end here
-
-        TheaterSession theaterSession = TheaterSession.builder()
-                .title(performance.play)
-                .startDateTime(performance.startTime)
-                .endDateTime(performance.endTime)
-                .build();
-        return ReservationRequest.builder()
-                .reservationId(reservationId)
-                .theaterSession(theaterSession)
-                .reservationCategory(reservationCategory)
-                .reservedSeats(reservedSeats)
-                .totalBilling(totalBilling)
-                .build();
+        return reservedSeats;
     }
 
     public void cancelReservation(String reservationId, Long performanceId, List<String> seats) {
