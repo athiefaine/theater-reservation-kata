@@ -6,7 +6,7 @@ import org.kata.theater.domain.allocation.AllocationQuotaSpecification;
 
 public class AllocationQuotasAdapter implements AllocationQuotas {
     @Override
-    public AllocationQuotaSpecification allocationQuota(PerformanceNature criteria) {
+    public AllocationQuotaSpecification find(PerformanceNature criteria) {
         double result;
         switch (criteria.getValue()) {
             case "PREMIERE":
