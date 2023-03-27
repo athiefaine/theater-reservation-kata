@@ -1,20 +1,26 @@
 package org.kata.theater.exposition.ticketing;
 
+import org.kata.theater.domain.allocation.Performance;
 import org.kata.theater.domain.reservation.ReservationAgent;
-import org.kata.theater.data.PerformanceEntity;
 import org.kata.theater.domain.reservation.ReservationRequest;
 import org.kata.theater.domain.reservation.ReservationSeat;
+import org.kata.theater.exposition.catalog.PerformanceDto;
+import org.kata.theater.exposition.mappers.PerformanceDtoMapper;
 
 public class ReservationTickerPrinter {
 
 
     private final ReservationAgent reservationAgent;
 
-    public ReservationTickerPrinter(ReservationAgent reservationAgent) {
+    private final PerformanceDtoMapper performanceDtoMapper;
+
+    public ReservationTickerPrinter(ReservationAgent reservationAgent, PerformanceDtoMapper performanceDtoMapper) {
         this.reservationAgent = reservationAgent;
+        this.performanceDtoMapper = performanceDtoMapper;
     }
 
-    public String printReservation(long customerId, int reservationCount, String reservationCategory, PerformanceEntity performance) {
+    public String printReservation(long customerId, int reservationCount, String reservationCategory, PerformanceDto performanceDto) {
+        Performance performance = performanceDtoMapper.dtoToBusiness(performanceDto);
         ReservationRequest reservationRequest = reservationAgent.reservation(customerId, reservationCount, reservationCategory, performance);
         return printXml(reservationRequest);
     }

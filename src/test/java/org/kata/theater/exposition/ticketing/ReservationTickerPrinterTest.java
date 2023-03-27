@@ -7,11 +7,13 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.kata.theater.ReservationService;
-import org.kata.theater.data.PerformanceEntity;
 import org.kata.theater.data.Reservation;
 import org.kata.theater.domain.allocation.AllocationQuotas;
+import org.kata.theater.domain.allocation.SeatAllocator;
 import org.kata.theater.domain.reservation.ReservationAgent;
 import org.kata.theater.domain.topology.TheaterTopologies;
+import org.kata.theater.exposition.catalog.PerformanceDto;
+import org.kata.theater.exposition.mappers.PerformanceDtoMapper;
 import org.kata.theater.infra.allocation.AllocationQuotasAdapter;
 import org.kata.theater.infra.allocation.PerformanceInventoryAdapter;
 import org.kata.theater.infra.topology.TheaterTopologiesAdapter;
@@ -30,6 +32,8 @@ class ReservationTickerPrinterTest {
     private AllocationQuotas allocationQuotas;
     private TheaterTopologies theaterTopologies;
     private PerformanceInventoryAdapter performanceInventory;
+    private PerformanceDtoMapper performanceDtoMapper;
+    private SeatAllocator seatAllocator;
 
 
     @BeforeEach
@@ -37,18 +41,21 @@ class ReservationTickerPrinterTest {
         allocationQuotas = new AllocationQuotasAdapter();
         theaterTopologies = new TheaterTopologiesAdapter();
         performanceInventory = new PerformanceInventoryAdapter();
-        reservationAgent = new ReservationAgent(allocationQuotas, theaterTopologies, performanceInventory);
-        reservationTickerPrinter = new ReservationTickerPrinter(reservationAgent);
+        seatAllocator = new SeatAllocator(theaterTopologies, allocationQuotas, performanceInventory);
+        reservationAgent = new ReservationAgent(
+                seatAllocator);
+        performanceDtoMapper = new PerformanceDtoMapper();
+        reservationTickerPrinter = new ReservationTickerPrinter(reservationAgent, performanceDtoMapper);
     }
 
     @Test
     @Order(5)
     void reserve_once_on_premiere_performance() {
-        PerformanceEntity performance = new PerformanceEntity();
-        performance.id = 1L;
-        performance.play = "The CICD by Corneille";
-        performance.startTime = LocalDate.of(2023, Month.APRIL, 22).atTime(21, 0);
-        performance.performanceNature = "PREMIERE";
+        PerformanceDto performance = new PerformanceDto(1L,
+                "The CICD by Corneille",
+                LocalDate.of(2023, Month.APRIL, 22).atTime(21, 0),
+                LocalDate.of(2023, Month.APRIL, 22).atTime(21, 0),
+                "PREMIERE");
         String reservation = reservationTickerPrinter.printReservation(1L, 4, "STANDARD",
                 performance);
         Approvals.verify(reservation);
@@ -61,11 +68,11 @@ class ReservationTickerPrinterTest {
     @Test
     @Order(4)
     void reserve_once_on_premiere_performance_with_premium_category() {
-        PerformanceEntity performance = new PerformanceEntity();
-        performance.id = 1L;
-        performance.play = "The CICD by Corneille";
-        performance.startTime = LocalDate.of(2023, Month.APRIL, 22).atTime(21, 0);
-        performance.performanceNature = "PREMIERE";
+        PerformanceDto performance = new PerformanceDto(1L,
+                "The CICD by Corneille",
+                LocalDate.of(2023, Month.APRIL, 22).atTime(21, 0),
+                LocalDate.of(2023, Month.APRIL, 22).atTime(23, 0),
+                "PREMIERE");
         String reservation = reservationTickerPrinter.printReservation(1L, 4, "PREMIUM",
                 performance);
         Approvals.verify(reservation);
@@ -79,11 +86,11 @@ class ReservationTickerPrinterTest {
     @Order(2)
     void cancel_then_reserve_on_premiere_performance_with_standard_category() {
         reservationAgent.cancelReservation("123456", 1L, List.of("B2"));
-        PerformanceEntity performance = new PerformanceEntity();
-        performance.id = 1L;
-        performance.play = "The CICD by Corneille";
-        performance.startTime = LocalDate.of(2023, Month.APRIL, 22).atTime(21, 0);
-        performance.performanceNature = "PREMIERE";
+        PerformanceDto performance = new PerformanceDto(1L,
+                "The CICD by Corneille",
+                LocalDate.of(2023, Month.APRIL, 22).atTime(21, 0),
+                LocalDate.of(2023, Month.APRIL, 22).atTime(23, 0),
+                "PREMIERE");
         String reservation = reservationTickerPrinter.printReservation(1L, 4, "STANDARD",
                 performance);
         Approvals.verify(reservation);
@@ -96,11 +103,11 @@ class ReservationTickerPrinterTest {
     @Test
     @Order(6)
     void reserve_twice_on_premiere_performance() {
-        PerformanceEntity performance = new PerformanceEntity();
-        performance.id = 1L;
-        performance.play = "The CICD by Corneille";
-        performance.startTime = LocalDate.of(2023, Month.APRIL, 22).atTime(21, 0);
-        performance.performanceNature = "PREMIERE";
+        PerformanceDto performance = new PerformanceDto(1L,
+                "The CICD by Corneille",
+                LocalDate.of(2023, Month.APRIL, 22).atTime(21, 0),
+                LocalDate.of(2023, Month.APRIL, 22).atTime(23, 0),
+                "PREMIERE");
         String reservation1 = reservationTickerPrinter.printReservation(1L, 4, "STANDARD",
                 performance);
         String reservation2 = reservationTickerPrinter.printReservation(1L, 5, "STANDARD",
@@ -115,11 +122,12 @@ class ReservationTickerPrinterTest {
     @Test
     @Order(3)
     void reservation_failed_on_preview_performance() {
-        PerformanceEntity performance = new PerformanceEntity();
-        performance.id = 2L;
-        performance.play = "Les fourberies de Scala - Molière";
-        performance.startTime = LocalDate.of(2023, Month.MARCH, 21).atTime(21, 0);
-        performance.performanceNature = "PREVIEW";
+        PerformanceDto performance = new PerformanceDto(2L,
+                "Les fourberies de Scala - Molière",
+                LocalDate.of(2023, Month.MARCH, 21).atTime(21, 0),
+                LocalDate.of(2023, Month.MARCH, 21).atTime(23, 0),
+                "PREVIEW");
+
 
         String reservation = reservationTickerPrinter.printReservation(2L, 4, "STANDARD",
                 performance);
@@ -134,11 +142,11 @@ class ReservationTickerPrinterTest {
     @Test
     @Order(1)
     void reservation_failed_on_premiere_performance() {
-        PerformanceEntity performance = new PerformanceEntity();
-        performance.id = 3L;
-        performance.play = "DOM JSON - Molière";
-        performance.startTime = LocalDate.of(2023, Month.MARCH, 21).atTime(21, 0);
-        performance.performanceNature = "PREMIERE";
+        PerformanceDto performance = new PerformanceDto(3L,
+                "DOM JSON - Molière",
+                LocalDate.of(2023, Month.MARCH, 21).atTime(21, 0),
+                LocalDate.of(2023, Month.MARCH, 21).atTime(23, 0),
+                "PREMIERE");
 
         String reservation = reservationTickerPrinter.printReservation(2L, 4, "STANDARD",
                 performance);
@@ -153,11 +161,11 @@ class ReservationTickerPrinterTest {
     @Test
     @Order(7)
     void reserve_once_on_derniere_performance_with_premium_category() {
-        PerformanceEntity performance = new PerformanceEntity();
-        performance.id = 1L;
-        performance.play = "The CICD by Corneille";
-        performance.startTime = LocalDate.of(2023, Month.APRIL, 22).atTime(21, 0);
-        performance.performanceNature = "DERNIERE";
+        PerformanceDto performance = new PerformanceDto(1L,
+                "The CICD by Corneille",
+                LocalDate.of(2023, Month.APRIL, 22).atTime(21, 0),
+                LocalDate.of(2023, Month.APRIL, 22).atTime(23, 0),
+                "DERNIERE");
         String reservation = reservationTickerPrinter.printReservation(1L, 4, "PREMIUM",
                 performance);
         Approvals.verify(reservation);
