@@ -26,7 +26,6 @@ import org.kata.theater.domain.topology.TheaterTopology;
 
 import java.math.BigDecimal;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -57,7 +56,12 @@ public class ReservationAgent {
         reservation.setPerformanceId(performance.id);
 
 
-        List<ReservationSeat> reservedSeats = allocateSeats(reservationCount, reservationCategory, room, allocationQuota);
+        TheaterTopology theaterTopology = TheaterTopology.from(room);
+        PerformanceAllocation performanceAllocation =
+                new PerformanceAllocation(theaterTopology, room.freeSeats(),
+                        reservationCount, reservationCategory, allocationQuota);
+
+        List<ReservationSeat> reservedSeats = performanceAllocation.findSeatsForReservation();
 
         reservation.setSeats(reservedSeats.stream()
                 .map(ReservationSeat::getSeatReference)
@@ -106,19 +110,6 @@ public class ReservationAgent {
                 .reservedSeats(reservedSeats)
                 .totalBilling(totalBilling)
                 .build();
-    }
-
-    private static List<ReservationSeat> allocateSeats(int reservationCount, String reservationCategory, TheaterRoom room, AllocationQuotaSpecification allocationQuota) {
-
-        TheaterTopology theaterTopology = TheaterTopology.from(room);
-        PerformanceAllocation performanceAllocation = new PerformanceAllocation(theaterTopology, room.freeSeats(),
-                reservationCount, reservationCategory);
-
-        List<ReservationSeat> reservedSeats = performanceAllocation.findSeatsForReservation();
-        if (!allocationQuota.isSatisfiedBy(performanceAllocation.performanceInventory())) {
-            reservedSeats = new ArrayList<>();
-        }
-        return reservedSeats;
     }
 
     public void cancelReservation(String reservationId, Long performanceId, List<String> seats) {
