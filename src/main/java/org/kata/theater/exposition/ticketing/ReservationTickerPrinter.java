@@ -1,7 +1,7 @@
 package org.kata.theater.exposition.ticketing;
 
 import org.kata.theater.domain.reservation.ReservationAgent;
-import org.kata.theater.data.Performance;
+import org.kata.theater.data.PerformanceEntity;
 import org.kata.theater.domain.reservation.ReservationRequest;
 import org.kata.theater.domain.reservation.ReservationSeat;
 
@@ -14,7 +14,7 @@ public class ReservationTickerPrinter {
         this.reservationAgent = reservationAgent;
     }
 
-    public String printReservation(long customerId, int reservationCount, String reservationCategory, Performance performance) {
+    public String printReservation(long customerId, int reservationCount, String reservationCategory, PerformanceEntity performance) {
         ReservationRequest reservationRequest = reservationAgent.reservation(customerId, reservationCount, reservationCategory, performance);
         return printXml(reservationRequest);
     }

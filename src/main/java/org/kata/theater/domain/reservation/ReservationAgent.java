@@ -5,7 +5,7 @@ import org.kata.theater.dao.CustomerSubscriptionDao;
 import org.kata.theater.dao.PerformancePriceDao;
 import org.kata.theater.dao.TheaterRoomDao;
 import org.kata.theater.dao.VoucherProgramDao;
-import org.kata.theater.data.Performance;
+import org.kata.theater.data.PerformanceEntity;
 import org.kata.theater.data.Reservation;
 import org.kata.theater.data.Row;
 import org.kata.theater.data.Seat;
@@ -13,11 +13,14 @@ import org.kata.theater.data.TheaterRoom;
 import org.kata.theater.data.Zone;
 import org.kata.theater.domain.allocation.AllocationQuotaSpecification;
 import org.kata.theater.domain.allocation.AllocationQuotas;
+import org.kata.theater.domain.allocation.Performance;
 import org.kata.theater.domain.allocation.PerformanceAllocation;
 import org.kata.theater.domain.allocation.PerformanceNature;
 import org.kata.theater.domain.price.Amount;
 import org.kata.theater.domain.price.Rate;
+import org.kata.theater.domain.topology.TheaterTopologies;
 import org.kata.theater.domain.topology.TheaterTopology;
+import org.kata.theater.infra.mappers.PerformanceMapper;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -29,17 +32,23 @@ public class ReservationAgent {
     private final PerformancePriceDao performancePriceDao = new PerformancePriceDao();
 
     private final AllocationQuotas allocationQuotas;
+    private final TheaterTopologies theaterTopologies;
 
-    public ReservationAgent(AllocationQuotas allocationQuotas) {
+    public ReservationAgent(AllocationQuotas allocationQuotas, TheaterTopologies theaterTopologies) {
         this.allocationQuotas = allocationQuotas;
+        this.theaterTopologies = theaterTopologies;
     }
 
-    public ReservationRequest reservation(long customerId, int reservationCount, String reservationCategory, Performance performance) {
+    public ReservationRequest reservation(long customerId, int reservationCount, String reservationCategory, PerformanceEntity performanceEntity) {
         // Data fetching starts here
         String reservationId = ReservationService.initNewReservation();
-        TheaterRoom room = theaterRoomDao.fetchTheaterRoom(performance.id);
-        BigDecimal performancePrice = performancePriceDao.fetchPerformancePrice(performance.id);
-        PerformanceNature performanceNature = new PerformanceNature(performance.performanceNature);
+
+        TheaterRoom room = theaterRoomDao.fetchTheaterRoom(performanceEntity.id);
+        List<String> freeSeatsRefs = room.freeSeats();
+
+        Performance performance = new PerformanceMapper().entityToBusiness(performanceEntity);
+        BigDecimal performancePrice = performancePriceDao.fetchPerformancePrice(performanceEntity.id);
+        PerformanceNature performanceNature = new PerformanceNature(performanceEntity.performanceNature);
         AllocationQuotaSpecification allocationQuota = allocationQuotas.find(performanceNature);
         CustomerSubscriptionDao customerSubscriptionDao = new CustomerSubscriptionDao();
         boolean isSubscribed = customerSubscriptionDao.fetchCustomerSubscription(customerId);
@@ -48,12 +57,12 @@ public class ReservationAgent {
 
         Reservation reservation = new Reservation();
         reservation.setReservationId(Long.parseLong(reservationId));
-        reservation.setPerformanceId(performance.id);
+        reservation.setPerformanceId(performanceEntity.id);
 
 
-        TheaterTopology theaterTopology = TheaterTopology.from(room);
+        TheaterTopology theaterTopology = theaterTopologies.fetchTopologyForPerformance(performance);
         PerformanceAllocation performanceAllocation =
-                new PerformanceAllocation(theaterTopology, room.freeSeats(),
+                new PerformanceAllocation(theaterTopology, freeSeatsRefs,
                         reservationCount, reservationCategory, allocationQuota);
 
         List<ReservationSeat> reservedSeats = performanceAllocation.findSeatsForReservation();
@@ -85,7 +94,7 @@ public class ReservationAgent {
         if (!reservedSeats.isEmpty()) {
             // TODO :introduce repository that takes a domain object that contains reservedSeats
             // TODO : shouldn't be it saved at the end of the method ?
-            theaterRoomDao.saveSeats(performance.id, reservedSeats.stream()
+            theaterRoomDao.saveSeats(performanceEntity.id, reservedSeats.stream()
                     .map(ReservationSeat::getSeatReference)
                     .collect(Collectors.toList()), "BOOKING_PENDING");
         }
@@ -97,9 +106,9 @@ public class ReservationAgent {
         return ReservationRequest.builder()
                 .reservationId(reservationId)
                 .theaterSession(TheaterSession.builder()
-                        .title(performance.play)
-                        .startDateTime(performance.startTime)
-                        .endDateTime(performance.endTime)
+                        .title(performanceEntity.play)
+                        .startDateTime(performanceEntity.startTime)
+                        .endDateTime(performanceEntity.endTime)
                         .build())
                 .reservationCategory(reservationCategory)
                 .reservedSeats(reservedSeats)

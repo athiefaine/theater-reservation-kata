@@ -7,11 +7,13 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.kata.theater.ReservationService;
-import org.kata.theater.domain.reservation.ReservationAgent;
-import org.kata.theater.data.Performance;
+import org.kata.theater.data.PerformanceEntity;
 import org.kata.theater.data.Reservation;
 import org.kata.theater.domain.allocation.AllocationQuotas;
+import org.kata.theater.domain.reservation.ReservationAgent;
+import org.kata.theater.domain.topology.TheaterTopologies;
 import org.kata.theater.infra.allocation.AllocationQuotasAdapter;
+import org.kata.theater.infra.topology.TheaterTopologiesAdapter;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -25,19 +27,21 @@ class ReservationTickerPrinterTest {
     private ReservationTickerPrinter reservationTickerPrinter;
     private ReservationAgent reservationAgent;
     private AllocationQuotas allocationQuotas;
+    private TheaterTopologies theaterTopologies;
 
 
     @BeforeEach
     void setUp() {
         allocationQuotas = new AllocationQuotasAdapter();
-        reservationAgent = new ReservationAgent(allocationQuotas);
+        theaterTopologies = new TheaterTopologiesAdapter();
+        reservationAgent = new ReservationAgent(allocationQuotas, theaterTopologies);
         reservationTickerPrinter = new ReservationTickerPrinter(reservationAgent);
     }
 
     @Test
     @Order(5)
     void reserve_once_on_premiere_performance() {
-        Performance performance = new Performance();
+        PerformanceEntity performance = new PerformanceEntity();
         performance.id = 1L;
         performance.play = "The CICD by Corneille";
         performance.startTime = LocalDate.of(2023, Month.APRIL, 22).atTime(21, 0);
@@ -54,7 +58,7 @@ class ReservationTickerPrinterTest {
     @Test
     @Order(4)
     void reserve_once_on_premiere_performance_with_premium_category() {
-        Performance performance = new Performance();
+        PerformanceEntity performance = new PerformanceEntity();
         performance.id = 1L;
         performance.play = "The CICD by Corneille";
         performance.startTime = LocalDate.of(2023, Month.APRIL, 22).atTime(21, 0);
@@ -72,7 +76,7 @@ class ReservationTickerPrinterTest {
     @Order(2)
     void cancel_then_reserve_on_premiere_performance_with_standard_category() {
         reservationAgent.cancelReservation("123456", 1L, List.of("B2"));
-        Performance performance = new Performance();
+        PerformanceEntity performance = new PerformanceEntity();
         performance.id = 1L;
         performance.play = "The CICD by Corneille";
         performance.startTime = LocalDate.of(2023, Month.APRIL, 22).atTime(21, 0);
@@ -89,7 +93,7 @@ class ReservationTickerPrinterTest {
     @Test
     @Order(6)
     void reserve_twice_on_premiere_performance() {
-        Performance performance = new Performance();
+        PerformanceEntity performance = new PerformanceEntity();
         performance.id = 1L;
         performance.play = "The CICD by Corneille";
         performance.startTime = LocalDate.of(2023, Month.APRIL, 22).atTime(21, 0);
@@ -108,7 +112,7 @@ class ReservationTickerPrinterTest {
     @Test
     @Order(3)
     void reservation_failed_on_preview_performance() {
-        Performance performance = new Performance();
+        PerformanceEntity performance = new PerformanceEntity();
         performance.id = 2L;
         performance.play = "Les fourberies de Scala - Molière";
         performance.startTime = LocalDate.of(2023, Month.MARCH, 21).atTime(21, 0);
@@ -127,7 +131,7 @@ class ReservationTickerPrinterTest {
     @Test
     @Order(1)
     void reservation_failed_on_premiere_performance() {
-        Performance performance = new Performance();
+        PerformanceEntity performance = new PerformanceEntity();
         performance.id = 3L;
         performance.play = "DOM JSON - Molière";
         performance.startTime = LocalDate.of(2023, Month.MARCH, 21).atTime(21, 0);
@@ -146,7 +150,7 @@ class ReservationTickerPrinterTest {
     @Test
     @Order(7)
     void reserve_once_on_derniere_performance_with_premium_category() {
-        Performance performance = new Performance();
+        PerformanceEntity performance = new PerformanceEntity();
         performance.id = 1L;
         performance.play = "The CICD by Corneille";
         performance.startTime = LocalDate.of(2023, Month.APRIL, 22).atTime(21, 0);

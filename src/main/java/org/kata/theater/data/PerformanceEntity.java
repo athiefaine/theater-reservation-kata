@@ -2,7 +2,7 @@ package org.kata.theater.data;
 
 import java.time.LocalDateTime;
 
-public class Performance {
+public class PerformanceEntity {
 
     public long id;
     public String play; // "The CICD - Corneille", "Les fourberies de Scala - Molière"
