@@ -1,6 +1,7 @@
 package org.kata.theater.domain.allocation;
 
 import org.kata.theater.domain.reservation.ReservationSeat;
+import org.kata.theater.domain.topology.SeatTopology;
 import org.kata.theater.domain.topology.TheaterTopology;
 
 import java.util.Collection;
@@ -14,11 +15,15 @@ public class PerformanceAllocation {
     private final TheaterTopology theaterTopology;
 
     private final List<String> freeSeats;
+    private final int requestedSeatCount;
+    private final String reservationCategory;
 
 
-    public PerformanceAllocation(TheaterTopology theaterTopology, List<String> freeSeats) {
+    public PerformanceAllocation(TheaterTopology theaterTopology, List<String> freeSeats, int requestedSeatCount, String reservationCategory) {
         this.theaterTopology = theaterTopology;
         this.freeSeats = freeSeats;
+        this.requestedSeatCount = requestedSeatCount;
+        this.reservationCategory = reservationCategory;
     }
 
 
@@ -30,14 +35,22 @@ public class PerformanceAllocation {
         return freeSeats.size();
     }
 
-    public List<ReservationSeat> findSeatsForReservation(int reservationCount, String reservationCategory) {
-        return theaterTopology.getRows().stream()
-                .map(row -> row.findSeatsForReservation(reservationCount, reservationCategory, freeSeats))
+    public List<ReservationSeat> findSeatsForReservation() {
+        List<SeatTopology> seatTopologies = theaterTopology.getRows().stream()
+                .map(row -> row.findSeatsForReservation(requestedSeatCount, reservationCategory, freeSeats))
                 .filter(Predicate.not(Collection::isEmpty))
                 .findFirst()
-                .orElse(Collections.emptyList())
+                .orElse(Collections.emptyList());
+        return seatTopologies
                 .stream()
                 .map(seatTopology -> new ReservationSeat(seatTopology.getSeatReference(), seatTopology.getCategory()))
                 .collect(Collectors.toList());
+    }
+
+    public PerformanceInventory performanceInventory() {
+        return PerformanceInventory.builder()
+                .availableSeatsCount(freeSeatCount() - requestedSeatCount)
+                .totalSeatsCount(totalSeatCount())
+                .build();
     }
 }

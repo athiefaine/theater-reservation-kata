@@ -111,17 +111,11 @@ public class ReservationAgent {
     private static List<ReservationSeat> allocateSeats(int reservationCount, String reservationCategory, TheaterRoom room, AllocationQuotaSpecification allocationQuota) {
 
         TheaterTopology theaterTopology = TheaterTopology.from(room);
-        PerformanceAllocation performanceAllocation = new PerformanceAllocation(theaterTopology, room.freeSeats());
+        PerformanceAllocation performanceAllocation = new PerformanceAllocation(theaterTopology, room.freeSeats(),
+                reservationCount, reservationCategory);
 
-        List<ReservationSeat> reservedSeats = performanceAllocation.findSeatsForReservation(reservationCount, reservationCategory);
-
-
-        PerformanceInventory performanceInventory =
-                PerformanceInventory.builder()
-                .totalSeatsCount(performanceAllocation.totalSeatCount())
-                .availableSeatsCount(performanceAllocation.freeSeatCount() - reservedSeats.size())
-                .build();
-        if (!allocationQuota.isSatisfiedBy(performanceInventory)) {
+        List<ReservationSeat> reservedSeats = performanceAllocation.findSeatsForReservation();
+        if (!allocationQuota.isSatisfiedBy(performanceAllocation.performanceInventory())) {
             reservedSeats = new ArrayList<>();
         }
         return reservedSeats;
