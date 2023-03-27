@@ -13,6 +13,7 @@ import org.kata.theater.domain.allocation.AllocationQuotas;
 import org.kata.theater.domain.reservation.ReservationAgent;
 import org.kata.theater.domain.topology.TheaterTopologies;
 import org.kata.theater.infra.allocation.AllocationQuotasAdapter;
+import org.kata.theater.infra.allocation.PerformanceInventoryAdapter;
 import org.kata.theater.infra.topology.TheaterTopologiesAdapter;
 
 import java.time.LocalDate;
@@ -28,13 +29,15 @@ class ReservationTickerPrinterTest {
     private ReservationAgent reservationAgent;
     private AllocationQuotas allocationQuotas;
     private TheaterTopologies theaterTopologies;
+    private PerformanceInventoryAdapter performanceInventory;
 
 
     @BeforeEach
     void setUp() {
         allocationQuotas = new AllocationQuotasAdapter();
         theaterTopologies = new TheaterTopologiesAdapter();
-        reservationAgent = new ReservationAgent(allocationQuotas, theaterTopologies);
+        performanceInventory = new PerformanceInventoryAdapter();
+        reservationAgent = new ReservationAgent(allocationQuotas, theaterTopologies, performanceInventory);
         reservationTickerPrinter = new ReservationTickerPrinter(reservationAgent);
     }
 

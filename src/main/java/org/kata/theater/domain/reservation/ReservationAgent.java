@@ -3,18 +3,14 @@ package org.kata.theater.domain.reservation;
 import org.kata.theater.ReservationService;
 import org.kata.theater.dao.CustomerSubscriptionDao;
 import org.kata.theater.dao.PerformancePriceDao;
-import org.kata.theater.dao.TheaterRoomDao;
 import org.kata.theater.dao.VoucherProgramDao;
 import org.kata.theater.data.PerformanceEntity;
 import org.kata.theater.data.Reservation;
-import org.kata.theater.data.Row;
-import org.kata.theater.data.Seat;
-import org.kata.theater.data.TheaterRoom;
-import org.kata.theater.data.Zone;
 import org.kata.theater.domain.allocation.AllocationQuotaSpecification;
 import org.kata.theater.domain.allocation.AllocationQuotas;
 import org.kata.theater.domain.allocation.Performance;
 import org.kata.theater.domain.allocation.PerformanceAllocation;
+import org.kata.theater.domain.allocation.PerformanceInventory;
 import org.kata.theater.domain.allocation.PerformanceNature;
 import org.kata.theater.domain.price.Amount;
 import org.kata.theater.domain.price.Rate;
@@ -25,28 +21,28 @@ import org.kata.theater.infra.mappers.PerformanceMapper;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ReservationAgent {
-    private final TheaterRoomDao theaterRoomDao = new TheaterRoomDao();
     private final PerformancePriceDao performancePriceDao = new PerformancePriceDao();
 
     private final AllocationQuotas allocationQuotas;
     private final TheaterTopologies theaterTopologies;
 
-    public ReservationAgent(AllocationQuotas allocationQuotas, TheaterTopologies theaterTopologies) {
+    private final PerformanceInventory performanceInventory;
+
+    public ReservationAgent(AllocationQuotas allocationQuotas, TheaterTopologies theaterTopologies, PerformanceInventory performanceInventory) {
         this.allocationQuotas = allocationQuotas;
         this.theaterTopologies = theaterTopologies;
+        this.performanceInventory = performanceInventory;
     }
 
     public ReservationRequest reservation(long customerId, int reservationCount, String reservationCategory, PerformanceEntity performanceEntity) {
         // Data fetching starts here
         String reservationId = ReservationService.initNewReservation();
 
-        TheaterRoom room = theaterRoomDao.fetchTheaterRoom(performanceEntity.id);
-        List<String> freeSeatsRefs = room.freeSeats();
-
         Performance performance = new PerformanceMapper().entityToBusiness(performanceEntity);
+        List<String> freeSeatsRefs = performanceInventory.fetchFreeSeatsForPerformance(performance);
+
         BigDecimal performancePrice = performancePriceDao.fetchPerformancePrice(performanceEntity.id);
         PerformanceNature performanceNature = new PerformanceNature(performanceEntity.performanceNature);
         AllocationQuotaSpecification allocationQuota = allocationQuotas.find(performanceNature);
@@ -62,7 +58,7 @@ public class ReservationAgent {
 
         TheaterTopology theaterTopology = theaterTopologies.fetchTopologyForPerformance(performance);
         PerformanceAllocation performanceAllocation =
-                new PerformanceAllocation(theaterTopology, freeSeatsRefs,
+                new PerformanceAllocation(performance, theaterTopology, freeSeatsRefs,
                         reservationCount, reservationCategory, allocationQuota);
 
         List<ReservationSeat> reservedSeats = performanceAllocation.findSeatsForReservation();
@@ -91,13 +87,7 @@ public class ReservationAgent {
         totalBilling = totalBilling.apply(discountRatio);
 
         // Data updates start here
-        if (!reservedSeats.isEmpty()) {
-            // TODO :introduce repository that takes a domain object that contains reservedSeats
-            // TODO : shouldn't be it saved at the end of the method ?
-            theaterRoomDao.saveSeats(performanceEntity.id, reservedSeats.stream()
-                    .map(ReservationSeat::getSeatReference)
-                    .collect(Collectors.toList()), "BOOKING_PENDING");
-        }
+        performanceInventory.allocateSeats(performanceAllocation);
         // TODO : introduce a DAO that saves a ReservationRequest in front of ReservationRequest
         // TODO : shouldn't be it saved at the end of the method ?
         ReservationService.updateReservation(reservation);
@@ -117,20 +107,7 @@ public class ReservationAgent {
     }
 
     public void cancelReservation(String reservationId, Long performanceId, List<String> seats) {
-        TheaterRoom theaterRoom = theaterRoomDao.fetchTheaterRoom(performanceId);
-        for (int i = 0; i < theaterRoom.getZones().length; i++) {
-            Zone zone = theaterRoom.getZones()[i];
-            for (int j = 0; j < zone.getRows().length; j++) {
-                Row row = zone.getRows()[j];
-                for (int k = 0; k < row.getSeats().length; k++) {
-                    Seat seat = row.getSeats()[k];
-                    if (seats.contains(seat.getSeatId())) {
-                        seat.setStatus("FREE");
-                    }
-                }
-            }
-        }
-        theaterRoomDao.save(performanceId, theaterRoom);
+        performanceInventory.deallocateSeats(performanceId, seats);
         ReservationService.cancelReservation(Long.parseLong(reservationId));
     }
 }

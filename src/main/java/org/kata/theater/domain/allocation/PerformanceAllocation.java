@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 public class PerformanceAllocation {
 
+    private final Performance performance;
     private final TheaterTopology theaterTopology;
 
     private final List<String> freeSeats;
@@ -20,8 +21,9 @@ public class PerformanceAllocation {
     private final AllocationQuotaSpecification allocationQuota;
 
 
-    public PerformanceAllocation(TheaterTopology theaterTopology, List<String> freeSeats, int requestedSeatCount,
+    public PerformanceAllocation(Performance performance, TheaterTopology theaterTopology, List<String> freeSeats, int requestedSeatCount,
                                  String reservationCategory, AllocationQuotaSpecification allocationQuota) {
+        this.performance = performance;
         this.theaterTopology = theaterTopology;
         this.freeSeats = freeSeats;
         this.requestedSeatCount = requestedSeatCount;
@@ -29,6 +31,9 @@ public class PerformanceAllocation {
         this.allocationQuota = allocationQuota;
     }
 
+    public Performance getPerformance() {
+        return performance;
+    }
 
     public int totalSeatCount() {
         return theaterTopology.totalSeatCount();
@@ -53,8 +58,8 @@ public class PerformanceAllocation {
                 .collect(Collectors.toList());
     }
 
-    public PerformanceInventory performanceInventory() {
-        return PerformanceInventory.builder()
+    public PerformanceAllocationStatistics performanceInventory() {
+        return PerformanceAllocationStatistics.builder()
                 .availableSeatsCount(freeSeatCount() - requestedSeatCount)
                 .totalSeatsCount(totalSeatCount())
                 .build();

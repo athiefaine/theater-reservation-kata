@@ -20,7 +20,7 @@ class AllocationQuotaSpecificationTest {
                                         boolean expected) {
         AllocationQuotaSpecification allocationQuotaSpecification = new AllocationQuotaSpecification(shelvingQuota);
         boolean satisfiedBy = allocationQuotaSpecification.isSatisfiedBy(
-                PerformanceInventory.builder()
+                PerformanceAllocationStatistics.builder()
                         .availableSeatsCount(availableSeatsCount)
                         .totalSeatsCount(totalSeatsCount)
                         .build());

@@ -1,14 +1,13 @@
 package org.kata.theater.domain.allocation;
 
-import lombok.Builder;
-import lombok.Value;
+import java.util.List;
 
-@Value
-@Builder
-public class PerformanceInventory {
+public interface PerformanceInventory {
 
-    int totalSeatsCount;
+    List<String> fetchFreeSeatsForPerformance(Performance performance);
 
-    int availableSeatsCount;
 
+    void allocateSeats(PerformanceAllocation performanceAllocation);
+
+    void deallocateSeats(long performanceId, List<String> deallocatedSeats);
 }
