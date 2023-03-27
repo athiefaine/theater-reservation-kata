@@ -97,14 +97,18 @@ public class TheaterService {
 
         return ReservationRequest.builder()
                 .reservationId(reservationId)
-                .performance(performance)
+                .theaterSession(TheaterSession.builder()
+                        .title(performance.play)
+                        .startDateTime(performance.startTime)
+                        .endDateTime(performance.endTime)
+                        .build())
                 .reservationCategory(reservationCategory)
                 .reservedSeats(reservedSeats)
                 .totalBilling(totalBilling)
                 .build();
     }
 
-    private static List<ReservationSeat> allocateSeats(int reservationCount, String reservationCategory, TheaterRoom room, double allocationQuota) {
+    private static List<ReservationSeat> allocateSeats(int reservationCount, String reservationCategory, TheaterRoom room, AllocationQuotaSpecification allocationQuota) {
         // find "reservationCount" first contiguous seats in any row
         int remainingSeats = 0;
         int totalSeats = 0;
