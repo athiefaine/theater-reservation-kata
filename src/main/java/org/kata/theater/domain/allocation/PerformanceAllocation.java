@@ -17,13 +17,16 @@ public class PerformanceAllocation {
     private final List<String> freeSeats;
     private final int requestedSeatCount;
     private final String reservationCategory;
+    private final AllocationQuotaSpecification allocationQuota;
 
 
-    public PerformanceAllocation(TheaterTopology theaterTopology, List<String> freeSeats, int requestedSeatCount, String reservationCategory) {
+    public PerformanceAllocation(TheaterTopology theaterTopology, List<String> freeSeats, int requestedSeatCount,
+                                 String reservationCategory, AllocationQuotaSpecification allocationQuota) {
         this.theaterTopology = theaterTopology;
         this.freeSeats = freeSeats;
         this.requestedSeatCount = requestedSeatCount;
         this.reservationCategory = reservationCategory;
+        this.allocationQuota = allocationQuota;
     }
 
 
@@ -41,6 +44,9 @@ public class PerformanceAllocation {
                 .filter(Predicate.not(Collection::isEmpty))
                 .findFirst()
                 .orElse(Collections.emptyList());
+        if (!allocationQuota.isSatisfiedBy(performanceInventory())) {
+            return Collections.emptyList();
+        }
         return seatTopologies
                 .stream()
                 .map(seatTopology -> new ReservationSeat(seatTopology.getSeatReference(), seatTopology.getCategory()))
