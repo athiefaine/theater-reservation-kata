@@ -1,5 +1,6 @@
-package org.kata.theater;
+package org.kata.theater.domain.reservation;
 
+import org.kata.theater.ReservationService;
 import org.kata.theater.dao.CustomerSubscriptionDao;
 import org.kata.theater.dao.PerformancePriceDao;
 import org.kata.theater.dao.TheaterRoomDao;
@@ -11,18 +12,15 @@ import org.kata.theater.data.Seat;
 import org.kata.theater.data.TheaterRoom;
 import org.kata.theater.data.Zone;
 import org.kata.theater.domain.allocation.AllocationQuotaSpecification;
-import org.kata.theater.domain.allocation.PerformanceNature;
 import org.kata.theater.domain.allocation.AllocationQuotas;
 import org.kata.theater.domain.allocation.AllocationQuotaPredicate;
 import org.kata.theater.domain.allocation.PerformanceNature;
 import org.kata.theater.domain.allocation.AllocationQuotas;
 import org.kata.theater.domain.allocation.AllocationQuotaSpecification;
 import org.kata.theater.domain.allocation.PerformanceInventory;
+import org.kata.theater.domain.allocation.PerformanceNature;
 import org.kata.theater.domain.price.Amount;
 import org.kata.theater.domain.price.Rate;
-import org.kata.theater.domain.reservation.ReservationRequest;
-import org.kata.theater.domain.reservation.ReservationSeat;
-import org.kata.theater.domain.reservation.TheaterSession;
 
 import java.math.BigDecimal;
 import java.math.BigDecimal;
@@ -30,13 +28,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class TheaterService {
+public class ReservationAgent {
     private final TheaterRoomDao theaterRoomDao = new TheaterRoomDao();
     private final PerformancePriceDao performancePriceDao = new PerformancePriceDao();
 
     private final AllocationQuotas allocationQuotas;
 
-    public TheaterService(AllocationQuotas allocationQuotas) {
+    public ReservationAgent(AllocationQuotas allocationQuotas) {
         this.allocationQuotas = allocationQuotas;
     }
 

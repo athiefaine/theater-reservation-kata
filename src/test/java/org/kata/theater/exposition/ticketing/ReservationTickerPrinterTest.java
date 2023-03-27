@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.kata.theater.ReservationService;
-import org.kata.theater.TheaterService;
+import org.kata.theater.domain.reservation.ReservationAgent;
 import org.kata.theater.data.Performance;
 import org.kata.theater.data.Reservation;
 import org.kata.theater.domain.allocation.AllocationQuotas;
@@ -23,15 +23,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ReservationTickerPrinterTest {
 
     private ReservationTickerPrinter reservationTickerPrinter;
-    private TheaterService theaterService;
+    private ReservationAgent reservationAgent;
     private AllocationQuotas allocationQuotas;
 
 
     @BeforeEach
     void setUp() {
         allocationQuotas = new AllocationQuotasAdapter();
-        theaterService = new TheaterService(allocationQuotas);
-        reservationTickerPrinter = new ReservationTickerPrinter(theaterService);
+        reservationAgent = new ReservationAgent(allocationQuotas);
+        reservationTickerPrinter = new ReservationTickerPrinter(reservationAgent);
     }
 
     @Test
@@ -71,7 +71,7 @@ class ReservationTickerPrinterTest {
     @Test
     @Order(2)
     void cancel_then_reserve_on_premiere_performance_with_standard_category() {
-        theaterService.cancelReservation("123456", 1L, List.of("B2"));
+        reservationAgent.cancelReservation("123456", 1L, List.of("B2"));
         Performance performance = new Performance();
         performance.id = 1L;
         performance.play = "The CICD by Corneille";
