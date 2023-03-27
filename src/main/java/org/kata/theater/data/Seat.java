@@ -26,6 +26,10 @@ public class Seat {
         this.status = status;
     }
 
+    boolean isFree() {
+        return "FREE".equals(getStatus());
+    }
+
     @Override
     public String toString() {
         return "Seat{" +
