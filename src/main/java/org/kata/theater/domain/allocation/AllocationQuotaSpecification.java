@@ -4,13 +4,13 @@ import lombok.Value;
 import org.kata.theater.domain.util.Specification;
 
 @Value
-public class AllocationQuotaSpecification implements Specification<PerformanceInventory> {
+public class AllocationQuotaSpecification implements Specification<PerformanceAllocationStatistics> {
     double shelvingQuota;
 
 
-    public boolean isSatisfiedBy(PerformanceInventory performanceInventory) {
-        return  performanceInventory.getAvailableSeatsCount() >
-                performanceInventory.getTotalSeatsCount() * shelvingQuota;
+    public boolean isSatisfiedBy(PerformanceAllocationStatistics performanceAllocationStatistics) {
+        return  performanceAllocationStatistics.getAvailableSeatsCount() >
+                performanceAllocationStatistics.getTotalSeatsCount() * shelvingQuota;
     }
 
 }
