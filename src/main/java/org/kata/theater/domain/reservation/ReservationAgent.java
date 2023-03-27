@@ -14,7 +14,6 @@ import org.kata.theater.data.Zone;
 import org.kata.theater.domain.allocation.AllocationQuotaSpecification;
 import org.kata.theater.domain.allocation.AllocationQuotas;
 import org.kata.theater.domain.allocation.PerformanceAllocation;
-import org.kata.theater.domain.allocation.PerformanceInventory;
 import org.kata.theater.domain.allocation.PerformanceNature;
 import org.kata.theater.domain.price.Amount;
 import org.kata.theater.domain.price.Rate;
@@ -107,17 +106,11 @@ public class ReservationAgent {
     private static List<ReservationSeat> allocateSeats(int reservationCount, String reservationCategory, TheaterRoom room, AllocationQuotaSpecification allocationQuota) {
 
         TheaterTopology theaterTopology = TheaterTopology.from(room);
-        PerformanceAllocation performanceAllocation = new PerformanceAllocation(theaterTopology, room.freeSeats());
+        PerformanceAllocation performanceAllocation = new PerformanceAllocation(theaterTopology, room.freeSeats(),
+                reservationCount, reservationCategory);
 
-        List<ReservationSeat> reservedSeats = performanceAllocation.findSeatsForReservation(reservationCount, reservationCategory);
-
-
-        PerformanceInventory performanceInventory =
-                PerformanceInventory.builder()
-                .totalSeatsCount(performanceAllocation.totalSeatCount())
-                .availableSeatsCount(performanceAllocation.freeSeatCount() - reservedSeats.size())
-                .build();
-        if (!allocationQuota.isSatisfiedBy(performanceInventory)) {
+        List<ReservationSeat> reservedSeats = performanceAllocation.findSeatsForReservation();
+        if (!allocationQuota.isSatisfiedBy(performanceAllocation.performanceInventory())) {
             reservedSeats = new ArrayList<>();
         }
         return reservedSeats;
