@@ -39,35 +39,22 @@ public class ReservationAgent {
     public ReservationRequest reservation(long customerId, int reservationCount, String reservationCategory, PerformanceEntity performanceEntity) {
         // Data fetching starts here
         String reservationId = ReservationService.initNewReservation();
-
-        Performance performance = new PerformanceMapper().entityToBusiness(performanceEntity);
-        List<String> freeSeatsRefs = performanceInventory.fetchFreeSeatsForPerformance(performance);
-
-        BigDecimal performancePrice = performancePriceDao.fetchPerformancePrice(performanceEntity.id);
-        PerformanceNature performanceNature = new PerformanceNature(performanceEntity.performanceNature);
-        AllocationQuotaSpecification allocationQuota = allocationQuotas.find(performanceNature);
-        CustomerSubscriptionDao customerSubscriptionDao = new CustomerSubscriptionDao();
-        boolean isSubscribed = customerSubscriptionDao.fetchCustomerSubscription(customerId);
-        BigDecimal voucherProgramDiscount = VoucherProgramDao.fetchVoucherProgram(LocalDate.now());
-        // Data fetching ends here
-
         Reservation reservation = new Reservation();
         reservation.setReservationId(Long.parseLong(reservationId));
         reservation.setPerformanceId(performanceEntity.id);
+        // Data fetching ends here
 
-
-        TheaterTopology theaterTopology = theaterTopologies.fetchTopologyForPerformance(performance);
-        PerformanceAllocation performanceAllocation =
-                new PerformanceAllocation(performance, theaterTopology, freeSeatsRefs,
-                        reservationCount, reservationCategory, allocationQuota);
-
-        List<ReservationSeat> reservedSeats = performanceAllocation.findSeatsForReservation();
+        List<ReservationSeat> reservedSeats = allocateSeats(reservationCount, reservationCategory, performanceEntity).findSeatsForReservation();
 
         reservation.setSeats(reservedSeats.stream()
                 .map(ReservationSeat::getSeatReference)
                 .toArray(String[]::new));
-
         // calculate raw price
+        BigDecimal performancePrice = performancePriceDao.fetchPerformancePrice(performanceEntity.id);
+        CustomerSubscriptionDao customerSubscriptionDao = new CustomerSubscriptionDao();
+        boolean isSubscribed = customerSubscriptionDao.fetchCustomerSubscription(customerId);
+        BigDecimal voucherProgramDiscount = VoucherProgramDao.fetchVoucherProgram(LocalDate.now());
+
         Amount rawPrice = Amount.nothing();
         Amount seatBasePrice = new Amount(performancePrice);
         for (ReservationSeat reservedSeat : reservedSeats) {
@@ -87,7 +74,6 @@ public class ReservationAgent {
         totalBilling = totalBilling.apply(discountRatio);
 
         // Data updates start here
-        performanceInventory.allocateSeats(performanceAllocation);
         // TODO : introduce a DAO that saves a ReservationRequest in front of ReservationRequest
         // TODO : shouldn't be it saved at the end of the method ?
         ReservationService.updateReservation(reservation);
@@ -104,6 +90,25 @@ public class ReservationAgent {
                 .reservedSeats(reservedSeats)
                 .totalBilling(totalBilling)
                 .build();
+    }
+
+    private PerformanceAllocation allocateSeats(int reservationCount, String reservationCategory, PerformanceEntity performanceEntity) {
+        // Data fetching starts here
+        Performance performance = new PerformanceMapper().entityToBusiness(performanceEntity);
+        List<String> freeSeatsRefs = performanceInventory.fetchFreeSeatsForPerformance(performance);
+
+        PerformanceNature performanceNature = new PerformanceNature(performanceEntity.performanceNature);
+        AllocationQuotaSpecification allocationQuota = allocationQuotas.find(performanceNature);
+        // Data fetching ends here
+
+
+        TheaterTopology theaterTopology = theaterTopologies.fetchTopologyForPerformance(performance);
+        PerformanceAllocation performanceAllocation =
+                new PerformanceAllocation(performance, theaterTopology, freeSeatsRefs,
+                        reservationCount, reservationCategory, allocationQuota);
+
+        performanceInventory.allocateSeats(performanceAllocation);
+        return performanceAllocation;
     }
 
     public void cancelReservation(String reservationId, Long performanceId, List<String> seats) {
