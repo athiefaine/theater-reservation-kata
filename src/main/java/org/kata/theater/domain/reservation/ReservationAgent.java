@@ -13,10 +13,12 @@ import org.kata.theater.data.TheaterRoom;
 import org.kata.theater.data.Zone;
 import org.kata.theater.domain.allocation.AllocationQuotaSpecification;
 import org.kata.theater.domain.allocation.AllocationQuotas;
+import org.kata.theater.domain.allocation.PerformanceAllocation;
 import org.kata.theater.domain.allocation.PerformanceInventory;
 import org.kata.theater.domain.allocation.PerformanceNature;
 import org.kata.theater.domain.price.Amount;
 import org.kata.theater.domain.price.Rate;
+import org.kata.theater.domain.topology.TheaterTopology;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -103,49 +105,17 @@ public class ReservationAgent {
     }
 
     private static List<ReservationSeat> allocateSeats(int reservationCount, String reservationCategory, TheaterRoom room, AllocationQuotaSpecification allocationQuota) {
-        // find "reservationCount" first contiguous seats in any row
-        int remainingSeats = 0;
-        int totalSeats = 0;
-        boolean foundAllSeats = false;
-        List<ReservationSeat> reservedSeats = new ArrayList<>();
-        for (int i = 0; i < room.getZones().length; i++) {
-            Zone zone = room.getZones()[i];
-            String zoneCategory = zone.getCategory();
-            for (int j = 0; j < zone.getRows().length; j++) {
-                Row row = zone.getRows()[j];
-                List<String> seatsForRow = new ArrayList<>();
-                int streakOfNotReservedSeats = 0;
-                for (int k = 0; k < row.getSeats().length; k++) {
-                    totalSeats++; // devrait être dans une série de boucles différentes mais ça permet qq ns
-                    Seat aSeat = row.getSeats()[k];
-                    if (!aSeat.getStatus().equals("BOOKED") && !aSeat.getStatus().equals("BOOKING_PENDING")) {
-                        remainingSeats++;
-                        if (!reservationCategory.equals(zoneCategory)) {
-                            continue;
-                        }
-                        if (!foundAllSeats) {
-                            seatsForRow.add(aSeat.getSeatId());
-                            streakOfNotReservedSeats++;
-                            if (streakOfNotReservedSeats >= reservationCount) {
-                                for (String seat : seatsForRow) {
-                                    reservedSeats.add(new ReservationSeat(seat, zoneCategory));
-                                }
-                                foundAllSeats = true;
-                                remainingSeats -= streakOfNotReservedSeats;
-                            }
-                        }
-                    } else {
-                        seatsForRow = new ArrayList<>();
-                        streakOfNotReservedSeats = 0;
-                    }
-                }
-            }
-        }
+
+        TheaterTopology theaterTopology = TheaterTopology.from(room);
+        PerformanceAllocation performanceAllocation = new PerformanceAllocation(theaterTopology, room.freeSeats());
+
+        List<ReservationSeat> reservedSeats = performanceAllocation.findSeatsForReservation(reservationCount, reservationCategory);
+
 
         PerformanceInventory performanceInventory =
                 PerformanceInventory.builder()
-                .totalSeatsCount(totalSeats)
-                .availableSeatsCount(remainingSeats)
+                .totalSeatsCount(performanceAllocation.totalSeatCount())
+                .availableSeatsCount(performanceAllocation.freeSeatCount() - reservedSeats.size())
                 .build();
         if (!allocationQuota.isSatisfiedBy(performanceInventory)) {
             reservedSeats = new ArrayList<>();

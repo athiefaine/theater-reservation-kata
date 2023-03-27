@@ -1,5 +1,10 @@
 package org.kata.theater.data;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class Zone {
     private Row[] rows;
 
@@ -24,5 +29,12 @@ public class Zone {
 
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    public List<Seat> seats() {
+        return Arrays.stream(rows)
+                .map(row -> Arrays.asList(row.getSeats()))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
     }
 }
