@@ -36,7 +36,7 @@ public class PerformanceInventoryAdapter implements PerformanceInventory {
     @Override
     public void deallocateSeats(long performanceId, List<String> deallocatedSeats) {
 
-
+        // FIXME : refactor to code more domain-oriented
         TheaterRoom theaterRoom = theaterRoomDao.fetchTheaterRoom(performanceId);
         for (int i = 0; i < theaterRoom.getZones().length; i++) {
             Zone zone = theaterRoom.getZones()[i];
