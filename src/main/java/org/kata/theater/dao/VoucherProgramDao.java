@@ -5,10 +5,10 @@ import java.time.LocalDate;
 import java.time.Month;
 
 public class VoucherProgramDao {
-    public static BigDecimal fetchVoucherProgram(LocalDate now) {
+    public static BigDecimal fetchVoucherProgram(LocalDate date) {
         // applies from reservation date, not performance date
         BigDecimal voucher = BigDecimal.ZERO;
-        if (now.isBefore(LocalDate.of(2023, Month.APRIL, 30))) {
+        if (date.isBefore(LocalDate.of(2023, Month.APRIL, 30))) {
             voucher = new BigDecimal("0.20");
         }
 
