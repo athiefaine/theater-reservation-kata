@@ -1,5 +1,6 @@
 package org.kata.theater.domain.allocation;
 
+import org.kata.theater.domain.reservation.Category;
 import org.kata.theater.domain.topology.TheaterTopologies;
 import org.kata.theater.domain.topology.TheaterTopology;
 
@@ -18,7 +19,7 @@ public class SeatAllocator {
         this.performanceInventory = performanceInventory;
     }
 
-    public PerformanceAllocation allocateSeats(int reservationCount, String reservationCategory, Performance performance) {
+    public PerformanceAllocation allocateSeats(int reservationCount, Category reservationCategory, Performance performance) {
         List<String> freeSeatsRefs = performanceInventory.fetchFreeSeatsForPerformance(performance);
         AllocationQuotaSpecification allocationQuota = allocationQuotas.find(performance.getNature());
         TheaterTopology theaterTopology = theaterTopologies.fetchTopologyForPerformance(performance);

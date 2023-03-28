@@ -21,7 +21,7 @@ public class ReservationAgent {
         this.reservationBook = reservationBook;
     }
 
-    public ReservationRequest reserve(Performance performance, int reservationCount, String reservationCategory, CustomerAccount customerAccount) {
+    public ReservationRequest reserve(Performance performance, int reservationCount, Category reservationCategory, CustomerAccount customerAccount) {
 
         PerformanceAllocation performanceAllocation =
                 seatAllocator.allocateSeats(reservationCount, reservationCategory, performance);

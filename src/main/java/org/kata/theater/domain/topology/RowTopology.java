@@ -1,6 +1,7 @@
 package org.kata.theater.domain.topology;
 
 import lombok.Value;
+import org.kata.theater.domain.reservation.Category;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,7 +16,7 @@ public class RowTopology {
         return seats.size();
     }
 
-    public List<SeatTopology> findSeatsForReservation(int reservationCount, String reservationCategory, List<String> freeSeats) {
+    public List<SeatTopology> findSeatsForReservation(int reservationCount, Category reservationCategory, List<String> freeSeats) {
         List<SeatTopology> reservableSeats = new ArrayList<>();
         for (SeatTopology seat : seats) {
             if (isReservable(reservationCategory, freeSeats, seat)) {
@@ -30,7 +31,7 @@ public class RowTopology {
         return Collections.emptyList();
     }
 
-    private boolean isReservable(String reservationCategory, List<String> freeSeats, SeatTopology seat) {
+    private boolean isReservable(Category reservationCategory, List<String> freeSeats, SeatTopology seat) {
         return freeSeats.contains(seat.getSeatReference()) && reservationCategory.equals(seat.getCategory());
     }
 }

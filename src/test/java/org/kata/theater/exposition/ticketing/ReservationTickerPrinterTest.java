@@ -27,6 +27,8 @@ import java.time.Month;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.kata.theater.domain.reservation.Category.PREMIUM;
+import static org.kata.theater.domain.reservation.Category.STANDARD;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ReservationTickerPrinterTest {
@@ -68,7 +70,7 @@ class ReservationTickerPrinterTest {
                 LocalDate.of(2023, Month.APRIL, 22).atTime(21, 0),
                 LocalDate.of(2023, Month.APRIL, 22).atTime(21, 0),
                 "PREMIERE");
-        String reservation = reservationTickerPrinter.printReservation(1L, 4, "STANDARD",
+        String reservation = reservationTickerPrinter.printReservation(1L, 4, STANDARD,
                 performance);
         Approvals.verify(reservation);
 
@@ -85,7 +87,7 @@ class ReservationTickerPrinterTest {
                 LocalDate.of(2023, Month.APRIL, 22).atTime(21, 0),
                 LocalDate.of(2023, Month.APRIL, 22).atTime(23, 0),
                 "PREMIERE");
-        String reservation = reservationTickerPrinter.printReservation(1L, 4, "PREMIUM",
+        String reservation = reservationTickerPrinter.printReservation(1L, 4, PREMIUM,
                 performance);
         Approvals.verify(reservation);
 
@@ -103,7 +105,7 @@ class ReservationTickerPrinterTest {
                 LocalDate.of(2023, Month.APRIL, 22).atTime(21, 0),
                 LocalDate.of(2023, Month.APRIL, 22).atTime(23, 0),
                 "PREMIERE");
-        String reservation = reservationTickerPrinter.printReservation(1L, 4, "STANDARD",
+        String reservation = reservationTickerPrinter.printReservation(1L, 4, STANDARD,
                 performance);
         Approvals.verify(reservation);
 
@@ -120,9 +122,9 @@ class ReservationTickerPrinterTest {
                 LocalDate.of(2023, Month.APRIL, 22).atTime(21, 0),
                 LocalDate.of(2023, Month.APRIL, 22).atTime(23, 0),
                 "PREMIERE");
-        String reservation1 = reservationTickerPrinter.printReservation(1L, 4, "STANDARD",
+        String reservation1 = reservationTickerPrinter.printReservation(1L, 4, STANDARD,
                 performance);
-        String reservation2 = reservationTickerPrinter.printReservation(1L, 5, "STANDARD",
+        String reservation2 = reservationTickerPrinter.printReservation(1L, 5, STANDARD,
                 performance);
         Approvals.verify(reservation2);
 
@@ -141,7 +143,7 @@ class ReservationTickerPrinterTest {
                 "PREVIEW");
 
 
-        String reservation = reservationTickerPrinter.printReservation(2L, 4, "STANDARD",
+        String reservation = reservationTickerPrinter.printReservation(2L, 4, STANDARD,
                 performance);
         Approvals.verify(reservation);
 
@@ -160,7 +162,7 @@ class ReservationTickerPrinterTest {
                 LocalDate.of(2023, Month.MARCH, 21).atTime(23, 0),
                 "PREMIERE");
 
-        String reservation = reservationTickerPrinter.printReservation(2L, 4, "STANDARD",
+        String reservation = reservationTickerPrinter.printReservation(2L, 4, STANDARD,
                 performance);
         Approvals.verify(reservation);
 
@@ -178,7 +180,7 @@ class ReservationTickerPrinterTest {
                 LocalDate.of(2023, Month.APRIL, 22).atTime(21, 0),
                 LocalDate.of(2023, Month.APRIL, 22).atTime(23, 0),
                 "DERNIERE");
-        String reservation = reservationTickerPrinter.printReservation(1L, 4, "PREMIUM",
+        String reservation = reservationTickerPrinter.printReservation(1L, 4, PREMIUM,
                 performance);
         Approvals.verify(reservation);
 

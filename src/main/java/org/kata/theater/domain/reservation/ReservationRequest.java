@@ -11,7 +11,7 @@ import java.util.List;
 @Value
 @Builder
 public class ReservationRequest {
-    String reservationCategory;
+    Category reservationCategory;
 
     TheaterSession theaterSession;
     String reservationId;
@@ -35,7 +35,7 @@ public class ReservationRequest {
         return theaterSession.getStartDateTime().toLocalTime();
     }
 
-    public String reservationCategory() {
+    public Category reservationCategory() {
         return reservationCategory;
     }
 

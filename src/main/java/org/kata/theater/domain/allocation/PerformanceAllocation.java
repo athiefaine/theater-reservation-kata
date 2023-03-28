@@ -1,5 +1,6 @@
 package org.kata.theater.domain.allocation;
 
+import org.kata.theater.domain.reservation.Category;
 import org.kata.theater.domain.reservation.ReservationSeat;
 import org.kata.theater.domain.topology.SeatTopology;
 import org.kata.theater.domain.topology.TheaterTopology;
@@ -17,12 +18,12 @@ public class PerformanceAllocation {
 
     private final List<String> freeSeats;
     private final int requestedSeatCount;
-    private final String reservationCategory;
+    private final Category reservationCategory;
     private final AllocationQuotaSpecification allocationQuota;
 
 
     public PerformanceAllocation(Performance performance, TheaterTopology theaterTopology, List<String> freeSeats, int requestedSeatCount,
-                                 String reservationCategory, AllocationQuotaSpecification allocationQuota) {
+                                 Category reservationCategory, AllocationQuotaSpecification allocationQuota) {
         this.performance = performance;
         this.theaterTopology = theaterTopology;
         this.freeSeats = freeSeats;

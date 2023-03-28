@@ -2,6 +2,7 @@ package org.kata.theater.exposition.ticketing;
 
 import org.kata.theater.domain.allocation.Performance;
 import org.kata.theater.domain.customer.CustomerAccount;
+import org.kata.theater.domain.reservation.Category;
 import org.kata.theater.domain.reservation.ReservationAgent;
 import org.kata.theater.domain.reservation.ReservationRequest;
 import org.kata.theater.domain.reservation.ReservationSeat;
@@ -20,7 +21,7 @@ public class ReservationTickerPrinter {
         this.performanceDtoMapper = performanceDtoMapper;
     }
 
-    public String printReservation(long customerId, int reservationCount, String reservationCategory, PerformanceDto performanceDto) {
+    public String printReservation(long customerId, int reservationCount, Category reservationCategory, PerformanceDto performanceDto) {
         Performance performance = performanceDtoMapper.dtoToBusiness(performanceDto);
         ReservationRequest reservationRequest = reservationAgent.reserve(performance, reservationCount, reservationCategory, new CustomerAccount(customerId));
         return printXml(reservationRequest);

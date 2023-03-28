@@ -7,5 +7,5 @@ public class ReservationSeat {
 
     String seatReference;
 
-    String category;
+    Category category;
 }

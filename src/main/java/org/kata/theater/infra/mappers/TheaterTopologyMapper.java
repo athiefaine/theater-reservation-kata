@@ -1,6 +1,7 @@
 package org.kata.theater.infra.mappers;
 
 import org.kata.theater.data.TheaterRoom;
+import org.kata.theater.domain.reservation.Category;
 import org.kata.theater.domain.topology.RowTopology;
 import org.kata.theater.domain.topology.SeatTopology;
 import org.kata.theater.domain.topology.TheaterTopology;
@@ -16,7 +17,7 @@ public class TheaterTopologyMapper {
                 .rows(Arrays.stream(theaterRoom.getZones())
                         .map(zone -> Arrays.stream(zone.getRows())
                                 .map(row -> new RowTopology(Arrays.stream(row.getSeats())
-                                        .map(seat -> new SeatTopology(seat.getSeatId(), zone.getCategory()))
+                                        .map(seat -> new SeatTopology(seat.getSeatId(), Category.valueOf(zone.getCategory())))
                                         .collect(Collectors.toList())))
                                 .collect(Collectors.toList()))
                         .flatMap(Collection::stream)
