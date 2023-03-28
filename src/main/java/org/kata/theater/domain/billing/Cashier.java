@@ -26,16 +26,13 @@ public class Cashier {
         boolean isSubscribed = customerSubscriptionDao.fetchCustomerSubscription(customerAccount.getId());
         BigDecimal voucherProgramDiscount = VoucherProgramDao.fetchVoucherProgram(performance.getTheaterSession().getStartDateTime().toLocalDate());
 
-        Amount rawPrice = Amount.nothing();
         Amount seatBasePrice = performanceCatalog.fetchPerformanceBasePrice(performance);
-        for (ReservationSeat reservedSeat : reservedSeats) {
-            Rate seatPriceRatio = performanceCatalog.fetchPriceRatioForSeat(reservedSeat);
-            rawPrice = rawPrice.add(seatBasePrice.apply(seatPriceRatio));
-        }
 
         // check and apply discounts and fidelity program
 
-        Amount totalBilling = new Amount(rawPrice);
+        Amount totalBilling = reservedSeats.stream()
+                .map(seat -> seatPrice(seat, seatBasePrice))
+                .reduce(Amount::add).orElse(Amount.nothing());
         if (isSubscribed) {
             totalBilling = totalBilling.apply(Rate.discountPercent("17.5"));
         }
@@ -44,5 +41,10 @@ public class Cashier {
         Rate discountRatio = Rate.fully().subtract(discount);
         totalBilling = totalBilling.apply(discountRatio);
         return totalBilling;
+    }
+
+    private Amount seatPrice(ReservationSeat seat, Amount seatBasePrice) {
+        Rate seatPriceRatio = performanceCatalog.fetchPriceRatioForSeat(seat);
+        return seatBasePrice.apply(seatPriceRatio);
     }
 }
