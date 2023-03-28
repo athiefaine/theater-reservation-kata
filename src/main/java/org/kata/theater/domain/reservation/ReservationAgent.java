@@ -7,7 +7,7 @@ import org.kata.theater.domain.allocation.PerformanceAllocation;
 import org.kata.theater.domain.allocation.SeatAllocator;
 import org.kata.theater.domain.billing.Cashier;
 import org.kata.theater.domain.customer.CustomerAccount;
-import org.kata.theater.domain.price.Amount;
+import org.kata.theater.domain.pricing.Amount;
 
 import java.util.List;
 

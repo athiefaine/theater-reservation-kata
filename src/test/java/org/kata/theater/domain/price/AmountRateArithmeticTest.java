@@ -1,6 +1,8 @@
 package org.kata.theater.domain.price;
 
 import org.junit.jupiter.api.Test;
+import org.kata.theater.domain.pricing.Amount;
+import org.kata.theater.domain.pricing.Rate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

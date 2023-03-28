@@ -2,7 +2,7 @@ package org.kata.theater.domain.reservation;
 
 import lombok.Builder;
 import lombok.Value;
-import org.kata.theater.domain.price.Amount;
+import org.kata.theater.domain.pricing.Amount;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
