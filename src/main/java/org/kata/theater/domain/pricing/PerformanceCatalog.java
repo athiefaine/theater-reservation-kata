@@ -8,4 +8,6 @@ public interface PerformanceCatalog {
     Amount fetchPerformanceBasePrice(Performance performance);
 
     Rate fetchPriceRatioForSeat(ReservationSeat seat);
+
+    Rate fetchPromotionalDiscountRate(Performance performance);
 }
