@@ -17,6 +17,7 @@ import org.kata.theater.exposition.catalog.PerformanceDto;
 import org.kata.theater.exposition.mappers.PerformanceDtoMapper;
 import org.kata.theater.infra.allocation.AllocationQuotasAdapter;
 import org.kata.theater.infra.allocation.PerformanceInventoryAdapter;
+import org.kata.theater.infra.customer.SubscriptionProgramAdapter;
 import org.kata.theater.infra.pricing.PerformanceCatalogAdapter;
 import org.kata.theater.infra.topology.TheaterTopologiesAdapter;
 
@@ -38,6 +39,7 @@ class ReservationTickerPrinterTest {
     private SeatAllocator seatAllocator;
     private Cashier cashier;
     private PerformanceCatalogAdapter performanceCatalog;
+    private SubscriptionProgramAdapter subscriptionProgram;
 
 
     @BeforeEach
@@ -47,7 +49,8 @@ class ReservationTickerPrinterTest {
         performanceInventory = new PerformanceInventoryAdapter();
         seatAllocator = new SeatAllocator(theaterTopologies, allocationQuotas, performanceInventory);
         performanceCatalog = new PerformanceCatalogAdapter();
-        cashier = new Cashier(performanceCatalog);
+        subscriptionProgram = new SubscriptionProgramAdapter();
+        cashier = new Cashier(performanceCatalog, subscriptionProgram);
         reservationAgent = new ReservationAgent(
                 seatAllocator, cashier);
         performanceDtoMapper = new PerformanceDtoMapper();
