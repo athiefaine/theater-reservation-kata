@@ -14,17 +14,11 @@ import org.kata.theater.data.Zone;
 import org.kata.theater.domain.allocation.AllocationQuotaSpecification;
 import org.kata.theater.domain.allocation.AllocationQuotas;
 import org.kata.theater.domain.allocation.PerformanceAllocation;
-import org.kata.theater.domain.allocation.AllocationQuotaPredicate;
-import org.kata.theater.domain.allocation.PerformanceNature;
-import org.kata.theater.domain.allocation.AllocationQuotas;
-import org.kata.theater.domain.allocation.AllocationQuotaSpecification;
-import org.kata.theater.domain.allocation.PerformanceInventory;
 import org.kata.theater.domain.allocation.PerformanceNature;
 import org.kata.theater.domain.price.Amount;
 import org.kata.theater.domain.price.Rate;
 import org.kata.theater.domain.topology.TheaterTopology;
 
-import java.math.BigDecimal;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
