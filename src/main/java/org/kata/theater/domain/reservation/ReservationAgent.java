@@ -1,6 +1,5 @@
 package org.kata.theater.domain.reservation;
 
-import org.kata.theater.ReservationService;
 import org.kata.theater.domain.allocation.Performance;
 import org.kata.theater.domain.allocation.PerformanceAllocation;
 import org.kata.theater.domain.allocation.SeatAllocator;
@@ -22,7 +21,7 @@ public class ReservationAgent {
         this.reservationBook = reservationBook;
     }
 
-    public ReservationRequest reservation(CustomerAccount customerAccount, int reservationCount, String reservationCategory, Performance performance) {
+    public ReservationRequest reserve(Performance performance, int reservationCount, String reservationCategory, CustomerAccount customerAccount) {
 
         PerformanceAllocation performanceAllocation =
                 seatAllocator.allocateSeats(reservationCount, reservationCategory, performance);
@@ -43,6 +42,6 @@ public class ReservationAgent {
 
     public void cancelReservation(String reservationId, Long performanceId, List<String> seats) {
         seatAllocator.cancelAllocation(performanceId, seats);
-        ReservationService.cancelReservation(Long.parseLong(reservationId));
+        reservationBook.cancelReservation(reservationId);
     }
 }

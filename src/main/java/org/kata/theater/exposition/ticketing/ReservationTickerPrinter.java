@@ -22,7 +22,7 @@ public class ReservationTickerPrinter {
 
     public String printReservation(long customerId, int reservationCount, String reservationCategory, PerformanceDto performanceDto) {
         Performance performance = performanceDtoMapper.dtoToBusiness(performanceDto);
-        ReservationRequest reservationRequest = reservationAgent.reservation(new CustomerAccount(customerId), reservationCount, reservationCategory, performance);
+        ReservationRequest reservationRequest = reservationAgent.reserve(performance, reservationCount, reservationCategory, new CustomerAccount(customerId));
         return printXml(reservationRequest);
     }
 

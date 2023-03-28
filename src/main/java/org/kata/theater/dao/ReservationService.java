@@ -1,6 +1,5 @@
-package org.kata.theater;
+package org.kata.theater.dao;
 
-import org.kata.theater.dao.ReservationDao;
 import org.kata.theater.data.ReservationEntity;
 
 // ach, a good old singleton

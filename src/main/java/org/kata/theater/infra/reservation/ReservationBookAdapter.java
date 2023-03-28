@@ -1,6 +1,6 @@
 package org.kata.theater.infra.reservation;
 
-import org.kata.theater.ReservationService;
+import org.kata.theater.dao.ReservationService;
 import org.kata.theater.data.ReservationEntity;
 import org.kata.theater.domain.allocation.PerformanceAllocation;
 import org.kata.theater.domain.reservation.Reservation;
@@ -23,5 +23,11 @@ public class ReservationBookAdapter implements ReservationBook {
         ReservationEntity reservationEntity = reservationMapper.businessToEntity(reservation);
         ReservationService.updateReservation(reservationEntity);
         return reservation;
+    }
+
+    @Override
+    public void cancelReservation(String reservationId) {
+        ReservationService.cancelReservation(Long.parseLong(reservationId));
+
     }
 }

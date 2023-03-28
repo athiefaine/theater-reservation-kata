@@ -6,4 +6,5 @@ public interface ReservationBook {
 
     Reservation registerReservation(PerformanceAllocation performanceAllocation);
 
+    void cancelReservation(String reservationId);
 }
