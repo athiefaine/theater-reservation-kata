@@ -1,4 +1,4 @@
-package org.kata.theater.domain.price;
+package org.kata.theater.domain.pricing;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
