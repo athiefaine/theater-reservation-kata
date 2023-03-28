@@ -28,7 +28,7 @@ public class Rate {
         return Rate.fully().subtract(new Rate(new BigDecimal(discountPercent).divide(new BigDecimal("100"))));
     }
 
-    public Amount multiply(Amount amount) {
+    public Amount apply(Amount amount) {
         return new Amount(amount.asBigDecimal().multiply(this.value));
     }
 

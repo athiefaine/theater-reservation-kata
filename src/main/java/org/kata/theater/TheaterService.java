@@ -134,7 +134,7 @@ public class TheaterService {
         boolean isSubscribed = customerSubscriptionDao.fetchCustomerSubscription(customerId);
         Amount totalBilling = new Amount(rawPrice);
         if (isSubscribed) {
-            totalBilling = totalBilling.multiply(Rate.discountPercent("17.5"));
+            totalBilling = totalBilling.apply(Rate.discountPercent("17.5"));
         }
 
         Rate discount = new Rate(VoucherProgramDao.fetchVoucherProgram(LocalDate.now())); // nasty dependency of course
