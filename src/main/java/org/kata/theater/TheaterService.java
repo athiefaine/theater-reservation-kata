@@ -15,7 +15,6 @@ import org.kata.theater.domain.price.Rate;
 import org.kata.theater.domain.reservation.ReservationRequest;
 import org.kata.theater.domain.reservation.ReservationSeat;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -117,7 +116,7 @@ public class TheaterService {
             totalBilling = totalBilling.apply(Rate.discountPercent("17.5"));
         }
 
-        Rate discount = new Rate(VoucherProgramDao.fetchVoucherProgram(LocalDate.now())); // nasty dependency of course
+        Rate discount = new Rate(VoucherProgramDao.fetchVoucherProgram(performance.startTime.toLocalDate()));
         Rate discountRatio = Rate.fully().subtract(discount);
         totalBilling = totalBilling.apply(discountRatio);
 
