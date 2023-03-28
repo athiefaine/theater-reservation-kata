@@ -1,29 +1,26 @@
 package org.kata.theater.domain.reservation;
 
 import org.kata.theater.ReservationService;
-import org.kata.theater.dao.CustomerSubscriptionDao;
-import org.kata.theater.dao.PerformancePriceDao;
-import org.kata.theater.dao.VoucherProgramDao;
 import org.kata.theater.data.Reservation;
 import org.kata.theater.domain.allocation.Performance;
 import org.kata.theater.domain.allocation.PerformanceAllocation;
 import org.kata.theater.domain.allocation.SeatAllocator;
+import org.kata.theater.domain.billing.Cashier;
+import org.kata.theater.domain.customer.CustomerAccount;
 import org.kata.theater.domain.price.Amount;
-import org.kata.theater.domain.price.Rate;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
 
 public class ReservationAgent {
-    private final PerformancePriceDao performancePriceDao = new PerformancePriceDao();
     private final SeatAllocator seatAllocator;
+    private final Cashier cashier;
 
-    public ReservationAgent(SeatAllocator seatAllocator) {
+    public ReservationAgent(SeatAllocator seatAllocator, Cashier cashier) {
         this.seatAllocator = seatAllocator;
+        this.cashier = cashier;
     }
 
-    public ReservationRequest reservation(long customerId, int reservationCount, String reservationCategory, Performance performance) {
+    public ReservationRequest reservation(CustomerAccount customerAccount, int reservationCount, String reservationCategory, Performance performance) {
         // Data fetching starts here
         String reservationId = ReservationService.initNewReservation();
         Reservation reservation = new Reservation();
@@ -38,29 +35,8 @@ public class ReservationAgent {
         reservation.setSeats(reservedSeats.stream()
                 .map(ReservationSeat::getSeatReference)
                 .toArray(String[]::new));
-        // calculate raw price
-        BigDecimal performancePrice = performancePriceDao.fetchPerformancePrice(performance.getId());
-        CustomerSubscriptionDao customerSubscriptionDao = new CustomerSubscriptionDao();
-        boolean isSubscribed = customerSubscriptionDao.fetchCustomerSubscription(customerId);
-        BigDecimal voucherProgramDiscount = VoucherProgramDao.fetchVoucherProgram(LocalDate.now());
 
-        Amount rawPrice = Amount.nothing();
-        Amount seatBasePrice = new Amount(performancePrice);
-        for (ReservationSeat reservedSeat : reservedSeats) {
-            Rate categoryRatio = reservedSeat.getCategory().equals("STANDARD") ? Rate.fully() : new Rate("1.5");
-            rawPrice = rawPrice.add(seatBasePrice.apply(categoryRatio));
-        }
-
-        // check and apply discounts and fidelity program
-
-        Amount totalBilling = new Amount(rawPrice);
-        if (isSubscribed) {
-            totalBilling = totalBilling.apply(Rate.discountPercent("17.5"));
-        }
-
-        Rate discount = new Rate(voucherProgramDiscount); // nasty dependency of course
-        Rate discountRatio = Rate.fully().subtract(discount);
-        totalBilling = totalBilling.apply(discountRatio);
+        Amount totalBilling = cashier.calculateBilling(customerAccount, performance, reservedSeats);
 
         // Data updates start here
         // TODO : introduce a DAO that saves a ReservationRequest in front of ReservationRequest

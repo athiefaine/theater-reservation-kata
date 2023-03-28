@@ -7,9 +7,11 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.kata.theater.ReservationService;
+import org.kata.theater.dao.PerformancePriceDao;
 import org.kata.theater.data.Reservation;
 import org.kata.theater.domain.allocation.AllocationQuotas;
 import org.kata.theater.domain.allocation.SeatAllocator;
+import org.kata.theater.domain.billing.Cashier;
 import org.kata.theater.domain.reservation.ReservationAgent;
 import org.kata.theater.domain.topology.TheaterTopologies;
 import org.kata.theater.exposition.catalog.PerformanceDto;
@@ -34,6 +36,8 @@ class ReservationTickerPrinterTest {
     private PerformanceInventoryAdapter performanceInventory;
     private PerformanceDtoMapper performanceDtoMapper;
     private SeatAllocator seatAllocator;
+    private PerformancePriceDao performancePriceDao;
+    private Cashier cashier;
 
 
     @BeforeEach
@@ -42,8 +46,10 @@ class ReservationTickerPrinterTest {
         theaterTopologies = new TheaterTopologiesAdapter();
         performanceInventory = new PerformanceInventoryAdapter();
         seatAllocator = new SeatAllocator(theaterTopologies, allocationQuotas, performanceInventory);
+        performancePriceDao = new PerformancePriceDao();
+        cashier = new Cashier(performancePriceDao);
         reservationAgent = new ReservationAgent(
-                seatAllocator);
+                seatAllocator, cashier);
         performanceDtoMapper = new PerformanceDtoMapper();
         reservationTickerPrinter = new ReservationTickerPrinter(reservationAgent, performanceDtoMapper);
     }
