@@ -2,7 +2,7 @@ package org.kata.theater.data;
 
 import java.util.Arrays;
 
-public class Reservation {
+public class ReservationEntity {
 
     private Long reservationId;
 

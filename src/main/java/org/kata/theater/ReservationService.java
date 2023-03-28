@@ -1,7 +1,7 @@
 package org.kata.theater;
 
 import org.kata.theater.dao.ReservationDao;
-import org.kata.theater.data.Reservation;
+import org.kata.theater.data.ReservationEntity;
 
 // ach, a good old singleton
 public class ReservationService {
@@ -12,17 +12,17 @@ public class ReservationService {
         return String.valueOf(currentId);
     }
 
-    public static void updateReservation(Reservation reservation) {
-        new ReservationDao().update(reservation);
+    public static void updateReservation(ReservationEntity reservationEntity) {
+        new ReservationDao().update(reservationEntity);
     }
 
-    public static Reservation findReservation(long reservationId) {
+    public static ReservationEntity findReservation(long reservationId) {
         return new ReservationDao().find(reservationId);
     }
 
     public static void cancelReservation(long reservationId) {
-        Reservation reservation = new ReservationDao().find(reservationId);
-        reservation.setSeats(new String[0]);
-        new ReservationDao().update(reservation);
+        ReservationEntity reservationEntity = new ReservationDao().find(reservationId);
+        reservationEntity.setSeats(new String[0]);
+        new ReservationDao().update(reservationEntity);
     }
 }

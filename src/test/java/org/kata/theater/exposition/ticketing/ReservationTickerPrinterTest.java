@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.kata.theater.ReservationService;
-import org.kata.theater.data.Reservation;
+import org.kata.theater.data.ReservationEntity;
 import org.kata.theater.domain.allocation.AllocationQuotas;
 import org.kata.theater.domain.allocation.SeatAllocator;
 import org.kata.theater.domain.billing.Cashier;
@@ -19,6 +19,7 @@ import org.kata.theater.infra.allocation.AllocationQuotasAdapter;
 import org.kata.theater.infra.allocation.PerformanceInventoryAdapter;
 import org.kata.theater.infra.customer.SubscriptionProgramAdapter;
 import org.kata.theater.infra.pricing.PerformanceCatalogAdapter;
+import org.kata.theater.infra.reservation.ReservationBookAdapter;
 import org.kata.theater.infra.topology.TheaterTopologiesAdapter;
 
 import java.time.LocalDate;
@@ -40,6 +41,7 @@ class ReservationTickerPrinterTest {
     private Cashier cashier;
     private PerformanceCatalogAdapter performanceCatalog;
     private SubscriptionProgramAdapter subscriptionProgram;
+    private ReservationBookAdapter reservationBook;
 
 
     @BeforeEach
@@ -51,8 +53,9 @@ class ReservationTickerPrinterTest {
         performanceCatalog = new PerformanceCatalogAdapter();
         subscriptionProgram = new SubscriptionProgramAdapter();
         cashier = new Cashier(performanceCatalog, subscriptionProgram);
+        reservationBook = new ReservationBookAdapter();
         reservationAgent = new ReservationAgent(
-                seatAllocator, cashier);
+                seatAllocator, cashier, reservationBook);
         performanceDtoMapper = new PerformanceDtoMapper();
         reservationTickerPrinter = new ReservationTickerPrinter(reservationAgent, performanceDtoMapper);
     }
@@ -142,9 +145,9 @@ class ReservationTickerPrinterTest {
                 performance);
         Approvals.verify(reservation);
 
-        Reservation savedReservation = ReservationService.findReservation(123458);
-        assertThat(savedReservation.getSeats()).isEmpty();
-        assertThat(savedReservation.getStatus()).isEqualTo("ABORTED");
+        ReservationEntity savedReservationEntity = ReservationService.findReservation(123458);
+        assertThat(savedReservationEntity.getSeats()).isEmpty();
+        assertThat(savedReservationEntity.getStatus()).isEqualTo("ABORTED");
 
     }
 
@@ -161,9 +164,9 @@ class ReservationTickerPrinterTest {
                 performance);
         Approvals.verify(reservation);
 
-        Reservation savedReservation = ReservationService.findReservation(123456);
-        assertThat(savedReservation.getSeats()).isEmpty();
-        assertThat(savedReservation.getStatus()).isEqualTo("ABORTED");
+        ReservationEntity savedReservationEntity = ReservationService.findReservation(123456);
+        assertThat(savedReservationEntity.getSeats()).isEmpty();
+        assertThat(savedReservationEntity.getStatus()).isEqualTo("ABORTED");
 
     }
 
