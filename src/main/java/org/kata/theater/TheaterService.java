@@ -149,7 +149,7 @@ public class TheaterService {
         }
 
         // check and apply discounts and fidelity program
-        Rate discountTime = new Rate(VoucherProgramDao.fetchVoucherProgram(performance.startTime.toLocalDate());
+        Rate discountTime = new Rate(VoucherProgramDao.fetchVoucherProgram(performance.startTime.toLocalDate()));
 
         // has he subscribed or not
         CustomerSubscriptionDao customerSubscriptionDao = new CustomerSubscriptionDao();
