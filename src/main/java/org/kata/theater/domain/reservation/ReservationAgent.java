@@ -23,7 +23,6 @@ import org.kata.theater.domain.topology.TheaterTopology;
 import org.kata.theater.infra.mappers.PerformanceMapper;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -52,7 +51,7 @@ public class ReservationAgent {
         AllocationQuotaSpecification allocationQuota = allocationQuotas.find(performanceNature);
         CustomerSubscriptionDao customerSubscriptionDao = new CustomerSubscriptionDao();
         boolean isSubscribed = customerSubscriptionDao.fetchCustomerSubscription(customerId);
-        BigDecimal voucherProgramDiscount = VoucherProgramDao.fetchVoucherProgram(LocalDate.now());
+        BigDecimal voucherProgramDiscount = VoucherProgramDao.fetchVoucherProgram(performance.getTheaterSession().getStartDateTime().toLocalDate());
         // Data fetching ends here
 
         Reservation reservation = new Reservation();
