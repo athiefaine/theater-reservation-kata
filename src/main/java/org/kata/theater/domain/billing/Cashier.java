@@ -10,7 +10,6 @@ import org.kata.theater.domain.price.Rate;
 import org.kata.theater.domain.reservation.ReservationSeat;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
 
 public class Cashier {
@@ -27,7 +26,7 @@ public class Cashier {
         BigDecimal performancePrice = performancePriceDao.fetchPerformancePrice(performance.getId());
         CustomerSubscriptionDao customerSubscriptionDao = new CustomerSubscriptionDao();
         boolean isSubscribed = customerSubscriptionDao.fetchCustomerSubscription(customerAccount.getId());
-        BigDecimal voucherProgramDiscount = VoucherProgramDao.fetchVoucherProgram(LocalDate.now());
+        BigDecimal voucherProgramDiscount = VoucherProgramDao.fetchVoucherProgram(performance.getTheaterSession().getStartDateTime().toLocalDate());
 
         Amount rawPrice = Amount.nothing();
         Amount seatBasePrice = new Amount(performancePrice);
