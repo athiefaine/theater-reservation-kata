@@ -29,7 +29,7 @@ public class PerformanceCatalogAdapter implements PerformanceCatalog {
     @Override
     public Rate fetchPromotionalDiscountRate(Performance performance) {
         BigDecimal promotionalDiscountRate = VoucherProgramDao.fetchVoucherProgram(performance.date());
-        return new Rate(promotionalDiscountRate);
+        return Rate.fully().subtract(new Rate(promotionalDiscountRate));
     }
 
 }

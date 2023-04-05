@@ -22,18 +22,18 @@ public class Cashier {
 
     public Amount calculateBilling(CustomerAccount customerAccount, Performance performance, List<ReservationSeat> reservedSeats) {
         Amount seatBasePrice = performanceCatalog.fetchPerformanceBasePrice(performance);
+        Rate subscriptionDiscount = subscriptionProgram.fetchSubscriptionDiscount(customerAccount);
+        Rate promotionalDiscount = performanceCatalog.fetchPromotionalDiscountRate(performance);
 
-        Amount totalBilling = reservedSeats.stream()
+        return calculateBasePrice(reservedSeats, seatBasePrice)
+                .apply(subscriptionDiscount)
+                .apply(promotionalDiscount);
+    }
+
+    private Amount calculateBasePrice(List<ReservationSeat> reservedSeats, Amount seatBasePrice) {
+        return reservedSeats.stream()
                 .map(seat -> seatPrice(seat, seatBasePrice))
                 .reduce(Amount::add).orElse(Amount.nothing());
-
-        Rate subscriptionDiscount = subscriptionProgram.fetchSubscriptionDiscount(customerAccount);
-        totalBilling = totalBilling.apply(subscriptionDiscount);
-
-        Rate discount = performanceCatalog.fetchPromotionalDiscountRate(performance);
-        Rate discountRatio = Rate.fully().subtract(discount);
-        totalBilling = totalBilling.apply(discountRatio);
-        return totalBilling;
     }
 
     private Amount seatPrice(ReservationSeat seat, Amount seatBasePrice) {
