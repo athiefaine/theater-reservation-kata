@@ -6,16 +6,15 @@ import org.kata.theater.domain.allocation.SeatAllocator;
 import org.kata.theater.domain.billing.Cashier;
 import org.kata.theater.domain.customer.CustomerAccount;
 import org.kata.theater.domain.pricing.Amount;
-import org.kata.theater.infra.reservation.ReservationBookAdapter;
 
 import java.util.List;
 
 public class ReservationAgent {
     private final SeatAllocator seatAllocator;
     private final Cashier cashier;
-    private final ReservationBookAdapter reservationBook;
+    private final ReservationBook reservationBook;
 
-    public ReservationAgent(SeatAllocator seatAllocator, Cashier cashier, ReservationBookAdapter reservationBook) {
+    public ReservationAgent(SeatAllocator seatAllocator, Cashier cashier, ReservationBook reservationBook) {
         this.seatAllocator = seatAllocator;
         this.cashier = cashier;
         this.reservationBook = reservationBook;

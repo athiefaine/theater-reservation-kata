@@ -9,9 +9,13 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.kata.theater.dao.ReservationService;
 import org.kata.theater.data.ReservationEntity;
 import org.kata.theater.domain.allocation.AllocationQuotas;
+import org.kata.theater.domain.allocation.PerformanceInventory;
 import org.kata.theater.domain.allocation.SeatAllocator;
 import org.kata.theater.domain.billing.Cashier;
+import org.kata.theater.domain.customer.SubscriptionProgram;
+import org.kata.theater.domain.pricing.PerformanceCatalog;
 import org.kata.theater.domain.reservation.ReservationAgent;
+import org.kata.theater.domain.reservation.ReservationBook;
 import org.kata.theater.domain.topology.TheaterTopologies;
 import org.kata.theater.exposition.catalog.PerformanceDto;
 import org.kata.theater.exposition.mappers.PerformanceDtoMapper;
@@ -37,13 +41,13 @@ class ReservationTickerPrinterTest {
     private ReservationAgent reservationAgent;
     private AllocationQuotas allocationQuotas;
     private TheaterTopologies theaterTopologies;
-    private PerformanceInventoryAdapter performanceInventory;
+    private PerformanceInventory performanceInventory;
     private PerformanceDtoMapper performanceDtoMapper;
     private SeatAllocator seatAllocator;
     private Cashier cashier;
-    private PerformanceCatalogAdapter performanceCatalog;
-    private SubscriptionProgramAdapter subscriptionProgram;
-    private ReservationBookAdapter reservationBook;
+    private PerformanceCatalog performanceCatalog;
+    private SubscriptionProgram subscriptionProgram;
+    private ReservationBook reservationBook;
 
 
     @BeforeEach
