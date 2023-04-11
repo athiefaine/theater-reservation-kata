@@ -27,7 +27,7 @@ public class ReservationAgent {
         List<ReservationSeat> reservedSeats = performanceAllocation.findSeatsForReservation();
 
 
-        Amount totalBilling = cashier.calculateBilling(customerAccount, performance, reservedSeats);
+        Amount totalBilling = cashier.calculateBilling(performanceAllocation, customerAccount);
         Reservation reservation = reservationBook.registerReservation(performanceAllocation);
 
         return ReservationRequest.builder()
