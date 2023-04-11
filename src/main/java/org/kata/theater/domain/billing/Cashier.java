@@ -1,6 +1,6 @@
 package org.kata.theater.domain.billing;
 
-import org.kata.theater.domain.allocation.Performance;
+import org.kata.theater.domain.allocation.PerformanceAllocation;
 import org.kata.theater.domain.customer.CustomerAccount;
 import org.kata.theater.domain.customer.SubscriptionProgram;
 import org.kata.theater.domain.pricing.Amount;
@@ -20,12 +20,12 @@ public class Cashier {
         this.subscriptionProgram = subscriptionProgram;
     }
 
-    public Amount calculateBilling(CustomerAccount customerAccount, Performance performance, List<ReservationSeat> reservedSeats) {
-        Amount seatBasePrice = performanceCatalog.fetchPerformanceBasePrice(performance);
+    public Amount calculateBilling(PerformanceAllocation performanceAllocation, CustomerAccount customerAccount) {
+        Amount seatBasePrice = performanceCatalog.fetchPerformanceBasePrice(performanceAllocation.getPerformance());
         Rate subscriptionDiscount = subscriptionProgram.fetchSubscriptionDiscount(customerAccount);
-        Rate promotionalDiscount = performanceCatalog.fetchPromotionalDiscountRate(performance);
+        Rate promotionalDiscount = performanceCatalog.fetchPromotionalDiscountRate(performanceAllocation.getPerformance());
 
-        return calculateBasePrice(reservedSeats, seatBasePrice)
+        return calculateBasePrice(performanceAllocation.findSeatsForReservation(), seatBasePrice)
                 .apply(subscriptionDiscount)
                 .apply(promotionalDiscount);
     }
