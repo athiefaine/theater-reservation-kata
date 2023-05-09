@@ -131,14 +131,18 @@ public class TheaterService {
     }
 
     private static double getVipQuota(Performance performance) {
+        double vipQuota;
         switch (performance.performanceNature) {
             case "PREMIERE":
-                return 0.5;
+                vipQuota = 0.5;
+                break;
             case "PREVIEW":
-                return 0.9;
+                vipQuota = 0.9;
+                break;
             default:
-                return -1;
+                vipQuota = -1;
         }
+        return vipQuota;
     }
 
 
