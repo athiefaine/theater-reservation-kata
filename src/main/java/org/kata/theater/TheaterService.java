@@ -78,10 +78,8 @@ public class TheaterService {
             }
         }
 
-        if (performance.performanceNature.equals("PREMIERE") && remainingSeats < totalSeats * 0.5) {
-            // keep 50% seats for VIP
-            reservedSeats = new ArrayList<>();
-        } else if (performance.performanceNature.equals("PREVIEW") && remainingSeats < totalSeats * 0.9) {
+        double vipQuota = getVipQuota(performance);
+        if (remainingSeats < totalSeats * vipQuota) {
             // keep 10% seats for VIP
             reservedSeats = new ArrayList<>();
         }
@@ -89,7 +87,6 @@ public class TheaterService {
         reservation.setSeats(reservedSeats.stream()
                 .map(ReservationSeat::getSeatReference)
                 .toArray(String[]::new));
-
 
 
         // calculate raw price
@@ -131,6 +128,17 @@ public class TheaterService {
                 .reservedSeats(reservedSeats)
                 .totalBilling(totalBilling)
                 .build();
+    }
+
+    private static double getVipQuota(Performance performance) {
+        switch (performance.performanceNature) {
+            case "PREMIERE":
+                return 0.5;
+            case "PREVIEW":
+                return 0.9;
+            default:
+                return -1;
+        }
     }
 
 
