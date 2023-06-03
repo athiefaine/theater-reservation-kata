@@ -137,8 +137,7 @@ public class TheaterService {
             totalBilling = totalBilling.apply(Rate.discountPercent("17.5"));
         }
 
-        Rate discount = new Rate(VoucherProgramDao.fetchVoucherProgram(LocalDate.now())); // nasty dependency of course
-        Rate discountRatio = Rate.fully().subtract(discount);
+        Rate discountRatio = Rate.fully().subtract(discountTime);
         String total = totalBilling.apply(discountRatio).asString() + "€";
 
         sb.append("\t<seatCategory>").append(reservationCategory).append("</seatCategory>\n");
